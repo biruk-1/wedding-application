@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+    "@expo-google-fonts/dm-sans": "^0.4.2",
     "@expo/ui": "~58.0.22",
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.17",
     "expo-constants": "~58.0.13",
     "expo-device": "~58.0.5",
     "expo-font": "~58.0.9",
     "expo-glass-effect": "~58.0.4",
     "expo-image": "~58.0.16",
+    "expo-linear-gradient": "~58.0.3",
     "expo-linking": "~58.0.14",
     "expo-router": "~58.0.25",
     "expo-splash-screen": "~58.0.11",
@@ -24,12 +30,19 @@
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
     "react-native-web": "~0.21.4",
-    "react-native-worklets": "0.13.0"
+    "react-native-worklets": "0.13.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@supabase/cli-windows-x64": "^2.122.0",
     "@types/react": "~19.3.0",
-    "typescript": "~6.0.3"
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
+    "supabase": "^2.122.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
   },
   "scripts": {
     "start": "expo start",
@@ -37,7 +50,18 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "eslint .",
+
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "supabase": "node ./scripts/supabase.mjs",
+    "db:start": "node ./scripts/supabase.mjs start",
+    "db:stop": "node ./scripts/supabase.mjs stop",
+    "db:reset": "node ./scripts/supabase.mjs db reset",
+    "db:status": "node ./scripts/supabase.mjs status",
+    "db:types": "node ./scripts/gen-db-types.mjs",
+    "db:test:security": "node ./scripts/run-security-tests.mjs"
   },
   "private": true
 }

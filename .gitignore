@@ -31,7 +31,17 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+
+# Cursor agent skill copies (local tooling)
+.agents/
+skills-lock.json
+
+# Local Supabase CLI temp / secrets
+supabase/.temp/
+
+
 
 # typescript
 *.tsbuildinfo
