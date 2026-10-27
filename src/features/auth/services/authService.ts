@@ -104,10 +104,15 @@ export async function updatePassword(password: string): Promise<AuthResult<{ upd
 }
 
 export async function getSession(): Promise<Session | null> {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) return null;
-  return data.session;
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) return null;
+    return data.session;
+  } catch {
+    return null;
+  }
 }
+
 
 /**
  * Consumes recovery / magic-link deep links (PKCE `code` or implicit tokens).

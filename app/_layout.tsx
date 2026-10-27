@@ -14,11 +14,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
-import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useAuthGate } from '@/features/auth/hooks/useAuthGate';
+import { AuthLoadingScreen } from '@/features/auth/screens/AuthLoadingScreen';
 import { colors } from '@/theme/colors';
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,8 +41,9 @@ function RootNavigator() {
   useAuthGate();
 
   if (isLoading) {
-    return <LoadingIndicator label="Restoring session…" style={{ flex: 1 }} />;
+    return <AuthLoadingScreen label="Restoring session…" />;
   }
+
 
   return (
     <ThemeProvider value={kiburanNavigationTheme}>
@@ -77,8 +79,9 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
-    return <LoadingIndicator label="Loading Kiburan…" style={{ flex: 1 }} />;
+    return <AuthLoadingScreen label="Loading Kiburan…" />;
   }
+
 
   return (
     <AuthProvider>

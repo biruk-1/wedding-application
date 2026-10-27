@@ -22,6 +22,8 @@ import {
 } from '@/features/auth/services/authService';
 import type { AuthUserMessage } from '@/features/auth/services/authErrors';
 
+const SESSION_RESTORE_TIMEOUT_MS = 4_000;
+
 export type AuthContextValue = {
   session: Session | null;
   user: User | null;
@@ -37,6 +39,19 @@ export type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function restoreSessionWithTimeout(): Promise<Session | null> {
+  try {
+    return await Promise.race([
+      getSession(),
+      new Promise<null>((resolve) => {
+        setTimeout(() => resolve(null), SESSION_RESTORE_TIMEOUT_MS);
+      }),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     void (async () => {
-      const existing = await getSession();
+      const existing = await restoreSessionWithTimeout();
       if (mounted) {
         setSession(existing);
         setIsLoading(false);
@@ -58,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!mounted) return;
       setSession(nextSession);
       if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true);
@@ -65,10 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         setIsPasswordRecovery(false);
       }
+      // Ensure we leave the restore skeleton even if getSession was slow.
+      setIsLoading(false);
     });
 
     const handleUrl = (url: string) => {
       void handleAuthCallbackUrl(url).then((result: AuthResult<{ session: Session | null }>) => {
+        if (!mounted) return;
         if (result.ok && result.data.session) {
           setSession(result.data.session);
           if (url.includes('type=recovery') || url.includes('reset-password')) {
@@ -114,5 +133,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export { AuthContext };
 
-/** Narrow helper for tests that assert error shape without importing screens. */
 export type { AuthUserMessage };

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const anon =
@@ -14,8 +14,33 @@ const stamp = Date.now();
 const email = `auth.task4.${stamp}@example.com`;
 const password = 'TestPass1';
 
+async function isLocalAuthReachable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${url}/auth/v1/health`, {
+      headers: { apikey: anon },
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+let ready = false;
+
 describe('auth against local Supabase', () => {
-  it('registers a user and provisions a profiles row via trigger', async () => {
+  beforeAll(async () => {
+    ready = await isLocalAuthReachable();
+    if (!ready) {
+      console.warn(
+        `[skip] Local Supabase Auth unreachable at ${url}. Start Docker and run npm run db:start.`,
+      );
+    }
+  });
+
+
+  it('registers a user and provisions a profiles row via trigger', async ({ skip }) => {
+    if (!ready) skip();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -35,7 +60,9 @@ describe('auth against local Supabase', () => {
     expect(profile?.display_name).toBe('Task Four');
   });
 
-  it('rejects invalid login credentials', async () => {
+  it('rejects invalid login credentials', async ({ skip }) => {
+    if (!ready) skip();
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password: 'wrong-password',
@@ -44,25 +71,30 @@ describe('auth against local Supabase', () => {
     expect(error?.message.toLowerCase()).toMatch(/invalid/i);
   });
 
-  it('signs in with valid credentials', async () => {
+  it('signs in with valid credentials', async ({ skip }) => {
+    if (!ready) skip();
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     expect(error).toBeNull();
     expect(data.session?.access_token).toBeTruthy();
   });
 
-  it('requests password reset without leaking account existence', async () => {
+  it('requests password reset without leaking account existence', async ({ skip }) => {
+    if (!ready) skip();
+
     const known = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: 'kiburan://reset-password',
     });
     const unknown = await supabase.auth.resetPasswordForEmail(`missing.${stamp}@example.com`, {
       redirectTo: 'kiburan://reset-password',
     });
-    // Local GoTrue typically returns null error for both; either way we must not throw.
     expect(known.error ?? null).toBeNull();
     expect(unknown.error ?? null).toBeNull();
   });
 
-  it('signs out the current session', async () => {
+  it('signs out the current session', async ({ skip }) => {
+    if (!ready) skip();
+
     const { error } = await supabase.auth.signOut();
     expect(error).toBeNull();
     const { data } = await supabase.auth.getSession();
@@ -71,5 +103,7 @@ describe('auth against local Supabase', () => {
 });
 
 afterAll(async () => {
-  await supabase.auth.signOut();
+  if (ready) {
+    await supabase.auth.signOut();
+  }
 });
