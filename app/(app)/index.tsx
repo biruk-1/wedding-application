@@ -1,5 +1,5 @@
-import { AuthenticatedHomeScreen } from '@/features/auth/screens/AuthenticatedHomeScreen';
+import { AppHomeHubScreen } from '@/features/weddings/screens/AppHomeHubScreen';
 
 export default function AppHomeRoute() {
-  return <AuthenticatedHomeScreen />;
+  return <AppHomeHubScreen />;
 }

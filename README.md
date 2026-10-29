@@ -19,6 +19,9 @@ npm start
 | --- | --- |
 | [docs/local-development.md](docs/local-development.md) | Local Supabase |
 | [docs/authentication.md](docs/authentication.md) | Auth, email confirm, password reset |
+| [docs/wedding-onboarding.md](docs/wedding-onboarding.md) | Wedding create / select / dashboard |
+| [docs/checklist.md](docs/checklist.md) | Checklist & task management |
+| [docs/vendors.md](docs/vendors.md) | Vendor marketplace & inquiries |
 | [docs/database-security.md](docs/database-security.md) | RLS / RPCs |
 | [docs/design-tokens.md](docs/design-tokens.md) | UI tokens |
 

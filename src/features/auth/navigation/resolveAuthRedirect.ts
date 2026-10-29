@@ -25,10 +25,9 @@ export function resolveAuthRedirect(input: AuthRedirectInput): AuthRedirectTarge
   const root = input.rootSegment;
   const inApp = root === '(app)';
   const inTabs = root === '(tabs)';
-  const inCreateWedding = root === 'create-wedding';
   const onPublicOnly = !root || PUBLIC_ONLY.has(root);
 
-  if (!input.hasSession && (inApp || inTabs || inCreateWedding)) {
+  if (!input.hasSession && (inApp || inTabs)) {
     return '/';
   }
 

@@ -25,6 +25,18 @@ describe('resolveAuthRedirect', () => {
     ).toBe('/');
   });
 
+  it('keeps reset-password public when signed out', () => {
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: false,
+        isPasswordRecovery: false,
+        rootSegment: 'reset-password',
+      }),
+    ).toBeNull();
+  });
+
+
   it('sends authenticated users away from welcome/login', () => {
     expect(
       resolveAuthRedirect({
