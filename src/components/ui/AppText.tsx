@@ -1,6 +1,7 @@
 import { Text, type TextProps, type TextStyle } from 'react-native';
 
-import { colors, type ColorToken } from '@/theme/colors';
+import type { ColorToken } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { typography, type TypographyVariant } from '@/theme/typography';
 
 export type AppTextProps = TextProps & {
@@ -14,6 +15,7 @@ export function AppText({
   style,
   ...rest
 }: AppTextProps) {
+  const colors = useColors();
   const base: TextStyle = {
     ...typography[variant],
     color: colors[color],

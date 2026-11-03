@@ -19,11 +19,15 @@ import {
   fieldErrorsFromZod,
   inquiryFormSchema,
 } from '@/features/vendors/validation/inquirySchemas';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 export function InquiryScreen() {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const { weddingId, vendorId } = useLocalSearchParams<{
     weddingId: string;
@@ -212,7 +216,8 @@ export function InquiryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   form: {
     gap: spacing.lg,
     paddingBottom: spacing['2xl'],
@@ -245,4 +250,5 @@ const styles = StyleSheet.create({
   center: {
     textAlign: 'center',
   },
-});
+  });
+}

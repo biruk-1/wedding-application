@@ -1,0 +1,286 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type {
+  CategoryRef,
+  VendorListItem,
+  VendorPage,
+  VendorProfile,
+  VendorServerFilters,
+} from '@/features/vendors/types';
+import type { Database } from '@/types/database.types';
+
+/**
+ * Query builders shared by the app service and the integration tests, so the exact selects
+ * used in production are exercised against local Supabase under RLS.
+ */
+type Client = SupabaseClient<Database>;
+type DbError = { message?: string; code?: string };
+type Result<T> = { data: T; error: null } | { data: null; error: DbError };
+
+export const VENDOR_PAGE_SIZE = 20;
+const MAX_CATEGORY_MATCH_VENDORS = 200;
+
+const CATEGORY_EMBED = 'categories:vendor_category_memberships ( category:vendor_categories ( id, slug, name_en ) )';
+
+const LIST_COLUMNS = `id, slug, business_name, city, country_code, cover_url, logo_url,
+  ${CATEGORY_EMBED},
+  services:vendor_services ( base_price, currency_code, price_unit )`;
+
+const PROFILE_COLUMNS = `id, slug, business_name, description, city, country_code, website_url, cover_url, logo_url,
+  ${CATEGORY_EMBED},
+  services:vendor_services ( id, title, description, base_price, currency_code, price_unit, created_at,
+    packages:vendor_packages ( id, name, description, inclusions, price, currency_code ) )`;
+
+type RawCategories = { category: CategoryRef | CategoryRef[] | null }[] | null;
+type RawPrice = { base_price: number | null; currency_code: string; price_unit: string };
+
+function flattenCategories(raw: RawCategories): CategoryRef[] {
+  return (raw ?? [])
+    .map((row) => (Array.isArray(row.category) ? (row.category[0] ?? null) : row.category))
+    .filter((category): category is CategoryRef => Boolean(category));
+}
+
+export function startingPrice(services: RawPrice[] | null): VendorListItem['startingPrice'] {
+  let best: VendorListItem['startingPrice'] = null;
+  for (const service of services ?? []) {
+    if (service.base_price == null) continue;
+    const amount = Number(service.base_price);
+    if (!best || amount < best.amount) {
+      best = { amount, currencyCode: service.currency_code, priceUnit: service.price_unit };
+    }
+  }
+  return best;
+}
+
+/**
+ * Reduces free text to characters that are safe inside a PostgREST `or=(...)` filter
+ * (no commas, parentheses, dots, quotes or wildcards) and turns word gaps into `%`, so
+ * "lumen lace" still matches "Lumen & Lace".
+ */
+export function searchPattern(raw: string): string | null {
+  const words = raw
+    .normalize('NFKC')
+    .replace(/[^\p{L}\p{N}\s'-]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 6);
+  if (words.length === 0) return null;
+  return `%${words.join('%').slice(0, 80)}%`;
+}
+
+async function vendorIdsInCategories(
+  client: Client,
+  categoryIds: string[],
+  signal?: AbortSignal,
+): Promise<Result<string[]>> {
+  if (categoryIds.length === 0) return { data: [], error: null };
+  let request = client
+    .from('vendor_category_memberships')
+    .select('vendor_id')
+    .in('category_id', categoryIds)
+    .limit(MAX_CATEGORY_MATCH_VENDORS);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) return { data: null, error };
+  return { data: Array.from(new Set((data ?? []).map((row) => row.vendor_id))), error: null };
+}
+
+/**
+ * One page of published, verified vendors with categories and starting prices embedded.
+ * Search, category, city and an upper price bound are applied in the database; the lower bound
+ * is a necessary-condition prefilter, refined client-side against the computed starting price.
+ */
+export async function fetchVendorPage(
+  client: Client,
+  filters: VendorServerFilters,
+  offset: number,
+  signal?: AbortSignal,
+): Promise<Result<VendorPage>> {
+  const pattern = searchPattern(filters.query);
+  let matchedVendorIds: string[] = [];
+  if (pattern && filters.queryCategoryIds.length > 0) {
+    const matched = await vendorIdsInCategories(client, filters.queryCategoryIds, signal);
+    if (matched.error) return matched;
+    matchedVendorIds = matched.data;
+  }
+
+  const filterByPrice = filters.minPrice != null || filters.maxPrice != null;
+  const select = [
+    LIST_COLUMNS,
+    filters.categoryId ? 'category_match:vendor_category_memberships!inner ( category_id )' : null,
+    filterByPrice ? 'price_match:vendor_services!inner ( base_price )' : null,
+  ]
+    .filter(Boolean)
+    .join(',\n');
+
+  let request = client
+    .from('vendors')
+    .select(select)
+    .eq('listing_status', 'published')
+    .eq('verification_status', 'verified')
+    .eq('services.is_active', true);
+
+  if (filters.categoryId) request = request.eq('category_match.category_id', filters.categoryId);
+  if (filters.city) request = request.eq('city', filters.city);
+  if (filterByPrice) {
+    request = request.eq('price_match.is_active', true);
+    if (filters.minPrice != null) request = request.gte('price_match.base_price', filters.minPrice);
+    if (filters.maxPrice != null) request = request.lte('price_match.base_price', filters.maxPrice);
+  }
+  if (pattern) {
+    const clauses = [
+      `business_name.ilike.${pattern}`,
+      `description.ilike.${pattern}`,
+      `city.ilike.${pattern}`,
+    ];
+    if (matchedVendorIds.length > 0) clauses.push(`id.in.(${matchedVendorIds.join(',')})`);
+    request = request.or(clauses.join(','));
+  }
+
+  let ranged = request
+    .order('business_name', { ascending: true })
+    .order('id', { ascending: true })
+    // One extra row tells us whether another page exists without a count query.
+    .range(offset, offset + VENDOR_PAGE_SIZE);
+  if (signal) ranged = ranged.abortSignal(signal);
+
+  const { data, error } = await ranged;
+  if (error) return { data: null, error };
+
+  const rows = (data ?? []) as unknown as (Omit<VendorListItem, 'categories' | 'startingPrice'> & {
+    categories: RawCategories;
+    services: RawPrice[] | null;
+  })[];
+  const items = rows.slice(0, VENDOR_PAGE_SIZE).map(
+    ({ categories, services, ...vendor }): VendorListItem => ({
+      id: vendor.id,
+      slug: vendor.slug,
+      business_name: vendor.business_name,
+      city: vendor.city,
+      country_code: vendor.country_code,
+      cover_url: vendor.cover_url,
+      logo_url: vendor.logo_url,
+      categories: flattenCategories(categories),
+      startingPrice: startingPrice(services),
+    }),
+  );
+
+  return {
+    data: { items, nextOffset: rows.length > VENDOR_PAGE_SIZE ? offset + VENDOR_PAGE_SIZE : null },
+    error: null,
+  };
+}
+
+export async function fetchVendorCities(client: Client, signal?: AbortSignal): Promise<Result<string[]>> {
+  let request = client
+    .from('vendors')
+    .select('city')
+    .eq('listing_status', 'published')
+    .eq('verification_status', 'verified')
+    .not('city', 'is', null);
+  if (signal) request = request.abortSignal(signal);
+  const { data, error } = await request;
+  if (error) return { data: null, error };
+  const cities = new Set<string>();
+  for (const row of data ?? []) {
+    const city = row.city?.trim();
+    if (city) cities.add(city);
+  }
+  return { data: Array.from(cities).sort((a, b) => a.localeCompare(b)), error: null };
+}
+
+/** Profile in one parallel round: vendor + services + packages embedded, plus media, schedule, reviews. */
+export async function fetchVendorProfile(
+  client: Client,
+  vendorId: string,
+  signal?: AbortSignal,
+): Promise<Result<VendorProfile | null>> {
+  const withSignal = <T extends { abortSignal: (s: AbortSignal) => T }>(query: T) =>
+    signal ? query.abortSignal(signal) : query;
+
+  const [vendorResult, mediaResult, availabilityResult, reviewsResult] = await Promise.all([
+    withSignal(
+      client
+        .from('vendors')
+        .select(PROFILE_COLUMNS)
+        .eq('id', vendorId)
+        .eq('services.is_active', true)
+        .eq('services.packages.is_active', true)
+        .order('created_at', { referencedTable: 'services', ascending: true }),
+    ).maybeSingle(),
+    withSignal(
+      client
+        .from('vendor_media')
+        .select('id, storage_path, media_type, caption, sort_order')
+        .eq('vendor_id', vendorId)
+        .order('sort_order', { ascending: true }),
+    ),
+    withSignal(
+      client
+        .from('vendor_availability')
+        .select('id, starts_at, ends_at, status')
+        .eq('vendor_id', vendorId)
+        .gte('ends_at', new Date().toISOString())
+        .order('starts_at', { ascending: true })
+        .limit(12),
+    ),
+    withSignal(
+      client
+        .from('vendor_reviews')
+        .select('id, rating, comment, created_at, reviewer:profiles ( display_name )')
+        .eq('vendor_id', vendorId)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(20),
+    ),
+  ]);
+
+  const firstError =
+    vendorResult.error ?? mediaResult.error ?? availabilityResult.error ?? reviewsResult.error;
+  if (firstError) return { data: null, error: firstError };
+  if (!vendorResult.data) return { data: null, error: null };
+
+  const raw = vendorResult.data as unknown as Omit<VendorProfile, 'categories' | 'services' | 'media' | 'availability' | 'reviews'> & {
+    categories: RawCategories;
+    services: (VendorProfile['services'][number] & { created_at?: string })[] | null;
+  };
+
+  const reviews = (reviewsResult.data ?? []).map((row) => {
+    const reviewer = row.reviewer as { display_name: string } | { display_name: string }[] | null;
+    return {
+      id: row.id,
+      rating: row.rating,
+      comment: row.comment,
+      created_at: row.created_at,
+      reviewer: Array.isArray(reviewer) ? (reviewer[0] ?? null) : reviewer,
+    };
+  });
+
+  return {
+    data: {
+      id: raw.id,
+      slug: raw.slug,
+      business_name: raw.business_name,
+      description: raw.description,
+      city: raw.city,
+      country_code: raw.country_code,
+      website_url: raw.website_url,
+      cover_url: raw.cover_url,
+      logo_url: raw.logo_url,
+      categories: flattenCategories(raw.categories),
+      services: (raw.services ?? []).map((service) => ({
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        base_price: service.base_price,
+        currency_code: service.currency_code,
+        price_unit: service.price_unit,
+        packages: service.packages ?? [],
+      })),
+      media: mediaResult.data ?? [],
+      availability: availabilityResult.data ?? [],
+      reviews,
+    },
+    error: null,
+  };
+}

@@ -2,10 +2,12 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { AppText } from '@/components/ui/AppText';
 import type { StatusFilter, TaskCategory } from '@/features/checklist/types';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
 import { typography } from '@/theme/typography';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 const STATUS_CHIPS: { id: StatusFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -32,6 +34,9 @@ export function TaskFilterBar({
   query: string;
   onQueryChange: (value: string) => void;
 }) {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View style={styles.wrap}>
       <TextInput
@@ -95,7 +100,8 @@ export function TaskFilterBar({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   wrap: {
     gap: spacing.md,
     marginBottom: spacing.lg,
@@ -130,4 +136,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successMuted,
     borderColor: colors.success,
   },
-});
+  });
+}

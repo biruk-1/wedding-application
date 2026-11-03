@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
-import { colors } from '@/theme/colors';
+import { ThemeBackdrop } from '@/components/theme/ThemeBackdrop';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 
 export type ScreenProps = {
@@ -19,6 +20,7 @@ export type ScreenProps = {
   padded?: boolean;
   edges?: Edge[];
   backgroundColor?: string;
+  themedBackdrop?: boolean;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   keyboardAvoiding?: boolean;
@@ -29,19 +31,19 @@ export function Screen({
   scroll = false,
   padded = true,
   edges = ['top', 'right', 'bottom', 'left'],
-  backgroundColor = colors.surface,
+  backgroundColor,
+  themedBackdrop = true,
   style,
   contentStyle,
   keyboardAvoiding = true,
 }: ScreenProps) {
+  const colors = useColors();
+  const surface = backgroundColor ?? colors.surface;
+
   const body = scroll ? (
     <ScrollView
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={[
-        styles.grow,
-        padded && styles.padded,
-        contentStyle,
-      ]}
+      contentContainerStyle={[styles.grow, padded && styles.padded, contentStyle]}
       style={styles.flex}>
       {children}
     </ScrollView>
@@ -60,7 +62,8 @@ export function Screen({
   );
 
   return (
-    <SafeAreaView edges={edges} style={[styles.flex, { backgroundColor }, style]}>
+    <SafeAreaView edges={edges} style={[styles.flex, { backgroundColor: surface }, style]}>
+      {themedBackdrop ? <ThemeBackdrop /> : null}
       {content}
     </SafeAreaView>
   );

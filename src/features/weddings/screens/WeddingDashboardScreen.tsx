@@ -1,61 +1,93 @@
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
+import { WeddingTabBar, weddingTabBarInset } from '@/components/navigation/WeddingTabBar';
+import { DashboardSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { CountdownStrip } from '@/features/weddings/components/CountdownStrip';
-import { getWeddingById } from '@/features/weddings/services/weddingService';
-import type { Wedding } from '@/features/weddings/types';
-import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
-import { colors } from '@/theme/colors';
+import { RefreshNotice } from '@/components/ui/RefreshNotice';
+import { formatMoney } from '@/features/budget/utils/money';
+import { useBudgetDashboard } from '@/features/budget/queries';
+import { ProgressHeader } from '@/features/checklist/components/ProgressHeader';
+import { useToggleTaskStatus, useWeddingTasks } from '@/features/checklist/queries';
+import { computeChecklistProgress } from '@/features/checklist/utils/taskHelpers';
+import { useGuestSummaries, useInvitations } from '@/features/guests/queries';
+import { summarizeInvitations } from '@/features/guests/utils/guestHelpers';
+import { getCelebrationCopy } from '@/features/weddings/celebrationCopy';
+import { DashboardHero } from '@/features/weddings/components/DashboardHero';
+import { DashboardHomeHeader } from '@/features/weddings/components/DashboardHomeHeader';
+import {
+  FeatureShortcutGrid,
+  type FeatureShortcut,
+} from '@/features/weddings/components/FeatureShortcutGrid';
+import { UpcomingTaskCard } from '@/features/weddings/components/UpcomingTaskCard';
+import { useWedding, useWeddingRole } from '@/features/weddings/queries';
+import { useSavedVendorCount } from '@/features/weddings/queries/useSavedVendorCount';
+import { markMilestone } from '@/lib/perf';
+import { errorMessage } from '@/lib/query/queryError';
 import { spacing } from '@/theme/spacing';
 
 export function WeddingDashboardScreen() {
   const router = useRouter();
   const { weddingId } = useLocalSearchParams<{ weddingId: string }>();
-  const { signOut } = useAuth();
-  const [wedding, setWedding] = useState<Wedding | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const insets = useSafeAreaInsets();
+  const weddingQuery = useWedding(weddingId);
+  const wedding = weddingQuery.data;
+  const { canWrite } = useWeddingRole(weddingId);
+  const tasksQuery = useWeddingTasks(weddingId);
+  const budgetQuery = useBudgetDashboard(weddingId);
+  const guestsQuery = useGuestSummaries(weddingId);
+  const invitationsQuery = useInvitations(weddingId);
+  const savedVendors = useSavedVendorCount(weddingId);
+  const toggle = useToggleTaskStatus(weddingId ?? '');
 
   useEffect(() => {
-    if (!weddingId) {
-      return;
-    }
+    if (wedding) markMilestone('dashboard:first-usable');
+  }, [wedding]);
 
-    let cancelled = false;
+  const progress = useMemo(
+    () => computeChecklistProgress(tasksQuery.data ?? []),
+    [tasksQuery.data],
+  );
 
-    void (async () => {
-      const result = await getWeddingById(weddingId);
-      if (cancelled) return;
-      if (!result.ok) {
-        setWedding(null);
-        setError(result.error.message);
-      } else {
-        setWedding(result.data);
-        setError(null);
-      }
-      setIsLoading(false);
-    })();
+  const upcomingTasks = useMemo(() => {
+    const tasks = tasksQuery.data ?? [];
+    return [...tasks]
+      .filter((t) => t.status !== 'done' && t.status !== 'cancelled')
+      .sort((a, b) => {
+        const ap = a.priority === 'urgent' || a.priority === 'high' ? 0 : 1;
+        const bp = b.priority === 'urgent' || b.priority === 'high' ? 0 : 1;
+        if (ap !== bp) return ap - bp;
+        if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+        if (a.due_date) return -1;
+        if (b.due_date) return 1;
+        return a.title.localeCompare(b.title);
+      })
+      .slice(0, 3);
+  }, [tasksQuery.data]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [weddingId, reloadToken]);
+  const inviteStats = useMemo(
+    () => summarizeInvitations(invitationsQuery.data ?? []),
+    [invitationsQuery.data],
+  );
+  const sentInvites = inviteStats.sent + inviteStats.delivered + inviteStats.opened;
+  const guestTotal = guestsQuery.data?.length ?? 0;
+  const budgetHint = budgetQuery.summary
+    ? formatMoney(
+        budgetQuery.summary.totalBudget,
+        budgetQuery.summary.currencyCode,
+      )
+    : undefined;
 
   if (!weddingId) {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <Header title="Wedding" showBack onBack={() => router.replace('/(app)' as Href)} />
         <AppText variant="body" color="danger" style={styles.center}>
           Missing wedding id.
         </AppText>
@@ -63,25 +95,28 @@ export function WeddingDashboardScreen() {
     );
   }
 
-  if (isLoading) {
+  if (weddingQuery.isPending) {
     return (
-      <Screen>
+      <Screen scroll>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <DashboardSkeleton />
       </Screen>
     );
   }
 
-  if (error || !wedding) {
+  if (!wedding) {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <Header title="Wedding" showBack onBack={() => router.replace('/(app)' as Href)} />
         <View style={styles.centerBlock}>
           <AppText variant="body" color="danger" style={styles.center}>
-            {error ?? 'Wedding unavailable.'}
+            {weddingQuery.error ? errorMessage(weddingQuery.error) : 'Wedding unavailable.'}
           </AppText>
-          <Button label="Retry" onPress={() => setReloadToken((value) => value + 1)} />
+          <Button
+            label="Retry"
+            loading={weddingQuery.isFetching}
+            onPress={() => void weddingQuery.refetch()}
+          />
           <Button
             label="Back to home"
             variant="secondary"
@@ -92,93 +127,178 @@ export function WeddingDashboardScreen() {
     );
   }
 
-  const dateLabel = formatWeddingDateLabel(wedding.wedding_date);
-  const location = [wedding.city, wedding.country_code].filter(Boolean).join(', ');
+  const copy = getCelebrationCopy(wedding.celebration_kind);
+  const isWedding = copy.kind === 'wedding';
+  const shortcuts: FeatureShortcut[] = [
+    {
+      id: 'checklist',
+      label: isWedding ? 'Checklist' : 'Tasks',
+      sublabel: progress.total > 0 ? `${progress.completed}/${progress.total}` : 'Start',
+      icon: 'checkbox-outline' as const,
+      tone: 'green' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/checklist` as Href),
+      enabled: copy.capabilities.tasks,
+    },
+    {
+      id: 'vendors',
+      label: 'Vendors',
+      sublabel: savedVendors.count > 0 ? `${savedVendors.count} saved` : 'Browse',
+      icon: 'briefcase-outline' as const,
+      tone: 'gold' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/vendors` as Href),
+      enabled: copy.capabilities.vendors,
+    },
+    {
+      id: 'guests',
+      label: 'Guest List',
+      sublabel:
+        guestTotal > 0
+          ? isWedding
+            ? `${guestTotal} invited`
+            : `${guestTotal} guests`
+          : 'Add',
+      icon: 'people-outline' as const,
+      tone: 'green' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/guests` as Href),
+      enabled: copy.capabilities.guests,
+    },
+    {
+      id: 'budget',
+      label: 'Budget',
+      sublabel: budgetHint ?? 'Set up',
+      icon: 'wallet-outline' as const,
+      tone: 'green' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/budget` as Href),
+      enabled: copy.capabilities.budget,
+    },
+    {
+      id: 'invites',
+      label: 'Invitations',
+      sublabel: sentInvites > 0 ? `${sentInvites} sent` : 'Create',
+      icon: 'mail-outline' as const,
+      tone: 'gold' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/guests/invite` as Href),
+      enabled: copy.capabilities.invitations,
+    },
+    {
+      id: 'timeline',
+      label: 'Schedule',
+      sublabel: 'View',
+      icon: 'calendar-outline' as const,
+      tone: 'green' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/timeline` as Href),
+      enabled: copy.capabilities.timeline,
+    },
+  ].filter((shortcut) => shortcut.enabled);
 
   return (
-    <Screen scroll>
-      <StatusBar style="dark" />
-      <Header
-        title={wedding.title}
-        subtitle={[dateLabel, location].filter(Boolean).join(' · ') || 'Add date and city anytime'}
-        showBack
-        onBack={() => router.replace('/(app)' as Href)}
-      />
-
-      <View style={styles.stack}>
-        <Card style={styles.heroCard}>
-          <AppText variant="caption" color="textMuted">
-            Partners
-          </AppText>
-          <AppText variant="subtitle" style={styles.partners}>
-            {wedding.partner_one_name} & {wedding.partner_two_name}
-          </AppText>
-          {wedding.style ? (
-            <AppText variant="caption" color="primary" style={styles.styleTag}>
-              {wedding.style}
-            </AppText>
-          ) : null}
-        </Card>
-
-        {wedding.wedding_date ? <CountdownStrip weddingDate={wedding.wedding_date} /> : null}
-
-        <Card style={styles.nextCard}>
-          <AppText variant="label">Checklist</AppText>
-          <AppText variant="body" color="textMuted">
-            Build your checklist — venue, catering, attire, and more.
-          </AppText>
-          <Button
-            label="Open checklist"
-            onPress={() => router.push(`/(app)/weddings/${wedding.id}/checklist` as Href)}
-          />
-        </Card>
-
-        <Card style={styles.nextCard}>
-          <AppText variant="label">Marketplace</AppText>
-          <AppText variant="body" color="textMuted">
-            Discover photographers, venues, caterers, and more for your day.
-          </AppText>
-          <Button
-            label="Browse vendors"
-            variant="success"
-            onPress={() => router.push(`/(app)/weddings/${wedding.id}/vendors` as Href)}
-          />
-        </Card>
-
-        <Button
-          label="Switch wedding"
-          variant="secondary"
-          onPress={() => router.push('/(app)/weddings' as Href)}
+    <View style={styles.root}>
+      <Screen scroll contentStyle={{ paddingBottom: weddingTabBarInset(insets.bottom) }}>
+        <StatusBar style="dark" />
+        <DashboardHomeHeader
+          onSettings={() => router.push(`/(app)/weddings/${wedding.id}/more` as Href)}
         />
-        <Button
-          label="Sign out"
-          variant="secondary"
-          onPress={() => {
-            void signOut().then((result) => {
-              if (result.ok) router.replace('/');
-            });
-          }}
+
+        <RefreshNotice
+          error={weddingQuery.isRefetchError ? weddingQuery.error : null}
+          onRetry={() => void weddingQuery.refetch()}
         />
+
+        <View style={styles.stack}>
+          <DashboardHero
+            celebrationKind={wedding.celebration_kind}
+            title={wedding.title}
+            partnerOne={wedding.partner_one_name}
+            partnerTwo={wedding.partner_two_name}
+            weddingDate={wedding.wedding_date}
+            city={wedding.city}
+            onEdit={
+              canWrite
+                ? () =>
+                    Alert.alert(
+                      copy.editDialogTitle,
+                      copy.editDialogBody,
+                    )
+                : undefined
+            }
+          />
+
+          <ProgressHeader progress={progress} label={copy.progressLabel} />
+
+          <FeatureShortcutGrid items={shortcuts} />
+
+          <View style={styles.section}>
+            <View style={styles.sectionRow}>
+              <AppText variant="label" color="heading">
+                Upcoming Tasks
+              </AppText>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push(`/(app)/weddings/${wedding.id}/checklist` as Href)}>
+                <AppText variant="caption" color="primary" style={styles.viewAll}>
+                  View All
+                </AppText>
+              </Pressable>
+            </View>
+            {upcomingTasks.length === 0 ? (
+              <Card style={styles.emptyCard}>
+                <AppText variant="body" color="textMuted">
+                  No open tasks yet. Open the checklist to get started.
+                </AppText>
+                <Button
+                  label="Open checklist"
+                  onPress={() => router.push(`/(app)/weddings/${wedding.id}/checklist` as Href)}
+                />
+              </Card>
+            ) : (
+              <View style={styles.taskList}>
+                {upcomingTasks.map((task) => (
+                  <UpcomingTaskCard
+                    key={task.id}
+                    task={task}
+                    canWrite={canWrite}
+                    onOpen={(id) =>
+                      router.push(`/(app)/weddings/${wedding.id}/checklist/${id}` as Href)
+                    }
+                    onToggleComplete={(id, done) =>
+                      toggle.mutate({ taskId: id, status: done ? 'todo' : 'done' })
+                    }
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      </Screen>
+      <View style={styles.tabBar}>
+        <WeddingTabBar weddingId={weddingId} />
       </View>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   stack: {
     gap: spacing.xl,
-    paddingBottom: spacing['2xl'],
   },
-  heroCard: {
-    gap: spacing.sm,
+  section: {
+    gap: spacing.md,
   },
-  partners: {
-    color: colors.text,
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  styleTag: {
-    textTransform: 'capitalize',
+  viewAll: {
+    fontWeight: '600',
   },
-  nextCard: {
+  taskList: {
+    gap: spacing.md,
+  },
+  emptyCard: {
     gap: spacing.md,
   },
   centerBlock: {
@@ -187,5 +307,11 @@ const styles = StyleSheet.create({
   },
   center: {
     textAlign: 'center',
+  },
+  tabBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });

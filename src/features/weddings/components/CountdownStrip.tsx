@@ -1,12 +1,22 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
+import { getCelebrationCopy } from '@/features/weddings/celebrationCopy';
 import { getCountdownParts } from '@/features/weddings/utils/countdown';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
-export function CountdownStrip({ weddingDate }: { weddingDate: string }) {
+export function CountdownStrip({
+  weddingDate,
+  celebrationKind = 'wedding',
+}: {
+  weddingDate: string;
+  celebrationKind?: string | null;
+}) {
+  const styles = useThemedStyles(createStyles);
+  const copy = getCelebrationCopy(celebrationKind);
   const parts = getCountdownParts(weddingDate);
   if (!parts) return null;
 
@@ -17,9 +27,9 @@ export function CountdownStrip({ weddingDate }: { weddingDate: string }) {
   ];
 
   return (
-    <View style={styles.wrap} accessibilityLabel="Wedding countdown">
+    <View style={styles.wrap} accessibilityLabel={copy.countdownAccessibilityLabel}>
       <AppText variant="caption" color="textMuted" style={styles.caption}>
-        {parts.isPast ? 'Since your wedding day' : 'Countdown'}
+        {parts.isPast ? copy.pastDateLabel : 'Countdown'}
       </AppText>
       <View style={styles.row}>
         {cells.map((cell) => (
@@ -37,7 +47,8 @@ export function CountdownStrip({ weddingDate }: { weddingDate: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   wrap: {
     gap: spacing.sm,
   },
@@ -59,4 +70,5 @@ const styles = StyleSheet.create({
   value: {
     color: colors.onSuccess,
   },
-});
+  });
+}

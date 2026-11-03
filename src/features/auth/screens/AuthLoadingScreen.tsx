@@ -3,9 +3,11 @@ import { StyleSheet, View } from 'react-native';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { AppText } from '@/components/ui/AppText';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 /**
  * Shown while fonts/session restore finish — avoids route flicker before auth gate runs.
@@ -15,6 +17,9 @@ export function AuthLoadingScreen({
 }: {
   label?: string;
 }) {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View
       style={styles.root}
@@ -36,7 +41,8 @@ export function AuthLoadingScreen({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -58,4 +64,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.md,
   },
-});
+  });
+}

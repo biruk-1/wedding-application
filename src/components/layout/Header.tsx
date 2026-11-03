@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View, type ViewProps } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 
 export type HeaderProps = ViewProps & {
@@ -22,6 +22,7 @@ export function Header({
   ...rest
 }: HeaderProps) {
   const router = useRouter();
+  const colors = useColors();
 
   return (
     <View style={[styles.container, style]} {...rest}>
@@ -38,7 +39,7 @@ export function Header({
         <View style={styles.side} />
       )}
       <View style={styles.titles}>
-        <AppText variant="title" style={styles.title}>
+        <AppText variant="title" color="heading" style={styles.title}>
           {title}
         </AppText>
         {subtitle ? (
@@ -78,7 +79,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    color: colors.text,
   },
   subtitle: {
     textAlign: 'center',

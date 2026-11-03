@@ -12,9 +12,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
 import { typography } from '@/theme/typography';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 const HERO = require('../../../../assets/images/welcome-hero.jpg');
 
@@ -23,6 +25,8 @@ const HERO = require('../../../../assets/images/welcome-hero.jpg');
  * full-bleed photo, gold mark + brand wordmark, CTAs in the lower third.
  */
 export function WelcomeScreen() {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { height, width } = useWindowDimensions();
@@ -92,7 +96,8 @@ export function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.success,
@@ -141,4 +146,5 @@ const styles = StyleSheet.create({
   secondaryText: {
     textAlign: 'center',
   },
-});
+  });
+}

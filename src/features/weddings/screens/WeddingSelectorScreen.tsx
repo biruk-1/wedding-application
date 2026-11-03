@@ -7,6 +7,7 @@ import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { normalizeCelebrationKind } from '@/features/weddings/celebrationCopy';
 import { WeddingListCard } from '@/features/weddings/components/WeddingListCard';
 import { useMyWeddings } from '@/features/weddings/hooks/useMyWeddings';
 import { spacing } from '@/theme/spacing';
@@ -14,6 +15,9 @@ import { spacing } from '@/theme/spacing';
 export function WeddingSelectorScreen() {
   const router = useRouter();
   const { memberships, isLoading, error, refresh } = useMyWeddings();
+  const includesOtherCelebrations = memberships.some(
+    ({ wedding }) => normalizeCelebrationKind(wedding.celebration_kind) !== 'wedding',
+  );
 
   if (isLoading) {
     return (
@@ -28,8 +32,12 @@ export function WeddingSelectorScreen() {
     <Screen scroll>
       <StatusBar style="dark" />
       <Header
-        title="Your weddings"
-        subtitle="Choose a wedding to continue planning"
+        title={includesOtherCelebrations ? 'Your celebrations' : 'Your weddings'}
+        subtitle={
+          includesOtherCelebrations
+            ? 'Choose a celebration to continue planning'
+            : 'Choose a wedding to continue planning'
+        }
         showBack
         onBack={() => router.replace('/(app)' as Href)}
       />
@@ -51,7 +59,7 @@ export function WeddingSelectorScreen() {
         ))}
       </View>
       <Button
-        label="Create another wedding"
+        label={includesOtherCelebrations ? 'Create another celebration' : 'Create another wedding'}
         variant="secondary"
         onPress={() => router.push('/(app)/create-wedding' as Href)}
       />

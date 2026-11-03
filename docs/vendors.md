@@ -5,11 +5,18 @@ Routes under `/(app)/weddings/[weddingId]/vendors`.
 ## Features
 
 - Marketplace home with search, category chips, city, and starting-price filters
+- Celebration-aware recommended categories and stable vendor ordering
 - Vendor profile: overview, services, packages, gallery (https media only), schedule windows, published reviews
 - Save / remove shortlist via `wedding_vendors` (`status = shortlisted`)
 - Inquiry form via `vendor_inquiries` (message required; optional service + proposed budget)
 
 No featured flag exists in the schema — featured rails are omitted. Availability is shown only as vendor-recorded windows, not as a booking guarantee. Phone/email are not highlighted in the customer UI (public columns remain governed by RLS).
+
+## Celebration personalization
+
+The marketplace maps each of the eight celebration kinds to preferred existing `vendor_categories.slug` values. Matching vendors are ranked on the client by the earliest matching preferred slug; the source order is preserved within equal ranks. This is recommendation ordering, not a popularity score.
+
+Recommended chips apply the same category filter as the normal category controls. **All Vendors** remains available to clear that filter. There is no database event-category join and no new category taxonomy. If a configured preferred slug is absent from the fetched categories, it is ignored.
 
 ## Database
 
@@ -35,3 +42,4 @@ No featured flag exists in the schema — featured rails are omitted. Availabili
 - Quotes, bookings, payments, chat
 - Private storage bucket URL signing (no bucket configured yet)
 - Invented ratings or popularity ranking
+- Database-managed event-to-category recommendations

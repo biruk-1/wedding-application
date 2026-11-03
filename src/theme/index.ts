@@ -15,6 +15,16 @@ import { fontFamilies, textStyle, typography } from './typography';
 
 export { colors } from './colors';
 export type { ColorToken } from './colors';
+export {
+  WeddingThemeProvider,
+  useColors,
+  useDecorations,
+  useWeddingTheme,
+} from './WeddingThemeContext';
+export { getWeddingTheme, weddingThemes, modernEthiopianTheme } from './palettes';
+export { normalizeWeddingStyle, resolveWeddingTheme, weddingStyleLabel } from './weddingStyle';
+export type { AppColors, ThemeDecorations, WeddingTheme, WeddingVisualStyle } from './types';
+export { useThemedShadows, useThemedStyles } from './useThemedStyles';
 export { radii } from './radii';
 export type { RadiusToken } from './radii';
 export { shadows } from './shadows';

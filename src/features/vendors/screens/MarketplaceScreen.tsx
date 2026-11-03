@@ -1,21 +1,124 @@
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { FlatList, Platform, RefreshControl, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
+import { WeddingTabBar, weddingTabBarInset } from '@/components/navigation/WeddingTabBar';
+import { MarketplaceSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SearchField } from '@/components/ui/SearchField';
 import { VendorCard } from '@/features/vendors/components/VendorCard';
 import { VendorFilterBar } from '@/features/vendors/components/VendorFilterBar';
 import { useVendorMarketplace } from '@/features/vendors/hooks/useVendorMarketplace';
+import type { VendorListItem } from '@/features/vendors/types';
+import { useWedding } from '@/features/weddings/queries';
 import { spacing } from '@/theme/spacing';
+import { useColors } from '@/theme/WeddingThemeContext';
 
 export function MarketplaceScreen() {
+  const colors = useColors();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const tabInset = weddingTabBarInset(insets.bottom);
   const { weddingId } = useLocalSearchParams<{ weddingId: string }>();
-  const marketplace = useVendorMarketplace();
+  const wedding = useWedding(weddingId);
+  const marketplace = useVendorMarketplace(wedding.data?.celebration_kind);
+
+  const vendors = marketplace.filtered;
+
+  const renderItem = useCallback(
+    ({ item }: { item: VendorListItem }) => (
+      <VendorCard
+        vendor={item}
+        onPress={() =>
+          router.push(`/(app)/weddings/${weddingId}/vendors/${item.id}` as Href)
+        }
+      />
+    ),
+    [router, weddingId],
+  );
+
+  const listHeader = useMemo(
+    () => (
+      <View style={styles.headerBlock}>
+        <AppText variant="title" color="heading">
+          Marketplace
+        </AppText>
+        <AppText variant="caption" color="textMuted" style={styles.subtitle}>
+          {wedding.data?.title
+            ? `Vendors for ${wedding.data.title}`
+            : 'Discover wedding vendors'}
+        </AppText>
+        {marketplace.personalization ? (
+          <View style={styles.recommendations}>
+            <AppText variant="caption" color="textMuted">
+              {marketplace.personalization.context}. Recommended matches appear first.
+            </AppText>
+            {marketplace.recommendedCategories.length > 0 ? (
+              <View style={styles.recommendationButtons}>
+                {marketplace.recommendedCategories.map((category) => (
+                  <Button
+                    key={category.id}
+                    label={category.name_en}
+                    size="compact"
+                    fullWidth={false}
+                    variant={
+                      marketplace.filters.categoryId === category.id
+                        ? 'success'
+                        : 'secondary'
+                    }
+                    onPress={() =>
+                      marketplace.setFilters({
+                        ...marketplace.filters,
+                        categoryId:
+                          marketplace.filters.categoryId === category.id
+                            ? null
+                            : category.id,
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+        {marketplace.error ? (
+          <View style={styles.errorBlock}>
+            <AppText variant="caption" color="danger">
+              {marketplace.error.message}
+            </AppText>
+            <Button label="Retry" size="compact" variant="secondary" onPress={marketplace.refresh} />
+          </View>
+        ) : null}
+        <SearchField
+          value={marketplace.filters.query}
+          onChangeText={(query) => marketplace.setFilters({ ...marketplace.filters, query })}
+          placeholder="Search vendors..."
+          accessibilityLabel="Search vendors"
+          containerStyle={styles.search}
+        />
+        <VendorFilterBar
+          filters={marketplace.filters}
+          onChange={marketplace.setFilters}
+          categories={marketplace.categories}
+          cities={marketplace.cities}
+          onReset={marketplace.resetFilters}
+          hasActiveFilters={marketplace.hasActiveFilters}
+          hideSearch
+        />
+        {vendors.length > 0 ? (
+          <AppText variant="caption" color="textMuted" style={styles.count}>
+            {vendors.length} vendor{vendors.length === 1 ? '' : 's'}
+          </AppText>
+        ) : null}
+      </View>
+    ),
+    [wedding.data?.title, marketplace, vendors.length],
+  );
 
   if (!weddingId) {
     return (
@@ -28,104 +131,120 @@ export function MarketplaceScreen() {
 
   if (marketplace.isLoading) {
     return (
-      <Screen>
+      <Screen scroll>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <AppText variant="title" color="heading" style={styles.loadingTitle}>
+          Marketplace
+        </AppText>
+        <MarketplaceSkeleton />
       </Screen>
     );
   }
 
+  const empty =
+    marketplace.vendors.length === 0 && !marketplace.error ? (
+      <EmptyState
+        title="No vendors published yet"
+        description="Published, verified vendors will appear here once listings go live."
+      />
+    ) : (
+      <View style={styles.empty}>
+        <AppText variant="subtitle" style={styles.center}>
+          No matching vendors
+        </AppText>
+        <AppText variant="body" color="textMuted" style={styles.center}>
+          Try another category, city, or price range.
+        </AppText>
+        <Button label="Reset filters" variant="secondary" onPress={marketplace.resetFilters} />
+      </View>
+    );
+
   return (
-    <Screen scroll>
-      <StatusBar style="dark" />
-      <Header
-        title="Marketplace"
-        subtitle="Discover wedding vendors"
-        showBack
-        onBack={() => router.replace(`/(app)/weddings/${weddingId}` as Href)}
-      />
-
-      {marketplace.error ? (
-        <View style={styles.block}>
-          <AppText color="danger" style={styles.center}>
-            {marketplace.error.message}
-          </AppText>
-          <Button label="Retry" onPress={marketplace.refresh} />
-        </View>
-      ) : null}
-
-      <VendorFilterBar
-        filters={marketplace.filters}
-        onChange={marketplace.setFilters}
-        categories={marketplace.categories}
-        cities={marketplace.cities}
-        onReset={marketplace.resetFilters}
-        hasActiveFilters={marketplace.hasActiveFilters}
-      />
-
-      {marketplace.vendors.length === 0 && !marketplace.error ? (
-        <View style={styles.empty}>
-          <AppText variant="subtitle" style={styles.center}>
-            No vendors published yet
-          </AppText>
-          <AppText variant="body" color="textMuted" style={styles.center}>
-            Published, verified vendors will appear here. Categories are ready when listings go live.
-          </AppText>
-        </View>
-      ) : marketplace.filtered.length === 0 ? (
-        <View style={styles.empty}>
-          <AppText variant="subtitle" style={styles.center}>
-            No matching vendors
-          </AppText>
-          <AppText variant="body" color="textMuted" style={styles.center}>
-            Try another category, city, or price range.
-          </AppText>
-          <Button label="Reset filters" variant="secondary" onPress={marketplace.resetFilters} />
-        </View>
-      ) : (
-        <View style={styles.list}>
-          <AppText variant="caption" color="textMuted">
-            {marketplace.filtered.length} vendor
-            {marketplace.filtered.length === 1 ? '' : 's'}
-            {marketplace.filters.categoryId
-              ? ` in ${
-                  marketplace.categories.find((c) => c.id === marketplace.filters.categoryId)
-                    ?.name_en ?? 'category'
-                }`
-              : ''}
-          </AppText>
-          {marketplace.filtered.map((vendor) => (
-            <VendorCard
-              key={vendor.id}
-              vendor={vendor}
-              onPress={() =>
-                router.push(
-                  `/(app)/weddings/${weddingId}/vendors/${vendor.id}` as Href,
-                )
-              }
+    <View style={styles.root}>
+      <Screen padded={false}>
+        <StatusBar style="dark" />
+        <FlatList
+          data={vendors}
+          keyExtractor={(vendor) => vendor.id}
+          renderItem={renderItem}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={empty}
+          ItemSeparatorComponent={Separator}
+          contentContainerStyle={[styles.content, { paddingBottom: tabInset }]}
+          keyboardShouldPersistTaps="handled"
+          initialNumToRender={8}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
+          refreshControl={
+            <RefreshControl
+              refreshing={false}
+              onRefresh={marketplace.refresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
-          ))}
-        </View>
-      )}
-    </Screen>
+          }
+        />
+      </Screen>
+      <View style={styles.tabBar}>
+        <WeddingTabBar weddingId={weddingId} />
+      </View>
+    </View>
   );
 }
 
+function Separator() {
+  return <View style={styles.separator} />;
+}
+
 const styles = StyleSheet.create({
-  block: {
-    gap: spacing.md,
+  root: { flex: 1 },
+  tabBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  content: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+  },
+  headerBlock: {
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  subtitle: {
+    marginBottom: spacing.sm,
+  },
+  recommendations: {
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  recommendationButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  errorBlock: {
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  search: {
+    marginBottom: spacing.sm,
+  },
+  count: {
+    marginTop: spacing.sm,
+  },
+  loadingTitle: {
     marginBottom: spacing.lg,
   },
   empty: {
     gap: spacing.md,
-    marginTop: spacing.xl,
-    paddingHorizontal: spacing.md,
-  },
-  list: {
-    gap: spacing.lg,
-    paddingBottom: spacing['2xl'],
+    paddingVertical: spacing['2xl'],
   },
   center: {
     textAlign: 'center',
+  },
+  separator: {
+    height: spacing.md,
   },
 });

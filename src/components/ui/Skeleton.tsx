@@ -1,7 +1,14 @@
-import { useEffect, useMemo } from 'react';
-import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 
@@ -18,6 +25,7 @@ export function Skeleton({
   radius = radii.md,
   style,
 }: SkeletonProps) {
+  const colors = useColors();
   const opacity = useMemo(() => new Animated.Value(0.45), []);
 
   useEffect(() => {
@@ -52,6 +60,7 @@ export function Skeleton({
           height,
           borderRadius: radius,
           opacity,
+          backgroundColor: colors.surfaceMuted,
         },
         style,
       ]}
@@ -60,6 +69,32 @@ export function Skeleton({
 }
 
 /** Auth / profile placeholder used between route transitions. */
+export function SkeletonCard({
+  children,
+  style,
+  padded = true,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  padded?: boolean;
+}) {
+  const colors = useColors();
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surfaceElevated,
+          borderColor: colors.border,
+        },
+        padded && styles.cardPadded,
+        style,
+      ]}>
+      {children}
+    </View>
+  );
+}
+
 export function AuthScreenSkeleton() {
   return (
     <View style={styles.screen} accessibilityLabel="Loading content">
@@ -76,9 +111,7 @@ export function AuthScreenSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  base: {
-    backgroundColor: colors.surfaceMuted,
-  },
+  base: {},
   screen: {
     flex: 1,
     justifyContent: 'center',
@@ -90,10 +123,10 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: spacing.sm,
-    padding: spacing.lg,
     borderRadius: radii.lg,
-    backgroundColor: colors.surfaceElevated,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+  },
+  cardPadded: {
+    padding: spacing.lg,
   },
 });

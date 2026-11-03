@@ -1,10 +1,10 @@
-import { colors } from '@/theme/colors';
 import { Colors } from '@/theme';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { useColorScheme } from '@/theme/use-color-scheme';
 
-/** Semantic Kiburan palette (light-first; dark unused until design defines it). */
+/** Active wedding visual theme (colors + decorative tokens). */
 export function useAppTheme() {
-  return colors;
+  return useWeddingTheme();
 }
 
 /** Legacy helper used by Expo template components. */

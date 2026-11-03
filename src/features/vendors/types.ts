@@ -31,6 +31,24 @@ export type VendorFilters = {
   maxPrice: number | null;
 };
 
+/**
+ * Server-side filter shape for the React Query marketplace layer (`queries.ts`).
+ * The live MarketplaceScreen still uses `useVendorMarketplace` + client filters until
+ * `listPublishedVendors` supports paged server filters.
+ */
+export type VendorServerFilters = VendorFilters & {
+  queryCategoryIds?: string[];
+};
+
+export type VendorPage = {
+  items: VendorListItem[];
+  nextOffset: number | null;
+};
+
+export type SavedVendorLink = WeddingVendor;
+
+export type CategoryRef = Pick<VendorCategory, 'id' | 'slug' | 'name_en'>;
+
 export type CreateInquiryInput = {
   weddingId: string;
   vendorId: string;

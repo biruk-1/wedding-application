@@ -24,8 +24,10 @@ import { commentSchema } from '@/features/checklist/validation/taskSchemas';
 import { isTaskOverdue, statusLabel } from '@/features/checklist/utils/taskHelpers';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
 import { supabase } from '@/lib/supabase';
-import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 type CommentRow = {
   id: string;
@@ -35,6 +37,7 @@ type CommentRow = {
 };
 
 export function TaskDetailScreen() {
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const { weddingId, taskId } = useLocalSearchParams<{ weddingId: string; taskId: string }>();
   const [task, setTask] = useState<TaskWithRelations | null>(null);
@@ -256,6 +259,9 @@ export function TaskDetailScreen() {
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
+
   return (
     <View style={styles.detail}>
       <AppText variant="caption" color="textMuted">
@@ -268,7 +274,8 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   card: {
     gap: spacing.md,
     marginBottom: spacing.xl,
@@ -294,4 +301,5 @@ const styles = StyleSheet.create({
   center: {
     textAlign: 'center',
   },
-});
+  });
+}

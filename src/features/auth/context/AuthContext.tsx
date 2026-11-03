@@ -4,12 +4,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import * as Linking from 'expo-linking';
 
-import { supabase } from '@/lib/supabase';
 import {
   getSession,
   handleAuthCallbackUrl,
@@ -21,6 +21,10 @@ import {
   type AuthResult,
 } from '@/features/auth/services/authService';
 import type { AuthUserMessage } from '@/features/auth/services/authErrors';
+import { membershipsQuery } from '@/features/weddings/membershipsQuery';
+import { syncCacheOwner } from '@/lib/query/cacheOwner';
+import { queryClient } from '@/lib/query/queryClient';
+import { supabase } from '@/lib/supabase';
 
 const SESSION_RESTORE_TIMEOUT_MS = 4_000;
 
@@ -56,9 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const cacheOwnerRef = useRef<string | null>(null);
 
   const clearPasswordRecovery = useCallback(() => {
     setIsPasswordRecovery(false);
+  }, []);
+
+  const applySession = useCallback((next: Session | null) => {
+    const nextUserId = next?.user?.id ?? null;
+    cacheOwnerRef.current = syncCacheOwner(queryClient, cacheOwnerRef.current, nextUserId);
+    setSession(next);
+    if (nextUserId) {
+      void queryClient.prefetchQuery(membershipsQuery(nextUserId));
+    }
   }, []);
 
   useEffect(() => {
@@ -67,14 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void (async () => {
       const existing = await restoreSessionWithTimeout();
       if (mounted) {
-        setSession(existing);
+        applySession(existing);
         setIsLoading(false);
       }
     })();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
-      setSession(nextSession);
+      applySession(nextSession);
       if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true);
       }
@@ -89,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void handleAuthCallbackUrl(url).then((result: AuthResult<{ session: Session | null }>) => {
         if (!mounted) return;
         if (result.ok && result.data.session) {
-          setSession(result.data.session);
+          applySession(result.data.session);
           if (url.includes('type=recovery') || url.includes('reset-password')) {
             setIsPasswordRecovery(true);
           }
@@ -110,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.subscription.unsubscribe();
       linkingSub.remove();
     };
-  }, []);
+  }, [applySession]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

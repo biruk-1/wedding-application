@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 import { fontFamilies, typography } from '@/theme/typography';
 
@@ -12,6 +12,7 @@ export type StepIndicatorProps = {
 };
 
 export function StepIndicator({ steps, activeIndex }: StepIndicatorProps) {
+  const colors = useColors();
   return (
     <View style={styles.row} accessibilityRole="progressbar">
       {steps.map((label, index) => {
@@ -22,9 +23,24 @@ export function StepIndicator({ steps, activeIndex }: StepIndicatorProps) {
         return (
           <View key={label} style={styles.step}>
             {index > 0 ? (
-              <View style={[styles.connector, filled && styles.connectorFilled]} />
+              <View
+                style={[
+                  styles.connector,
+                  { backgroundColor: filled ? colors.primaryMuted : colors.border },
+                ]}
+              />
             ) : null}
-            <View style={[styles.circle, filled ? styles.circleActive : styles.circleIdle]}>
+            <View
+              style={[
+                styles.circle,
+                filled
+                  ? { backgroundColor: colors.primary }
+                  : {
+                      backgroundColor: colors.surfaceMuted,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    },
+              ]}>
               <AppText
                 variant="label"
                 style={[styles.number, { color: filled ? colors.onPrimary : colors.textSubtle }]}>
@@ -67,11 +83,7 @@ const styles = StyleSheet.create({
     right: '50%',
     width: '100%',
     height: 2,
-    backgroundColor: colors.border,
     zIndex: 0,
-  },
-  connectorFilled: {
-    backgroundColor: colors.primaryMuted,
   },
   circle: {
     width: 32,
@@ -80,14 +92,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
-  },
-  circleActive: {
-    backgroundColor: colors.primary,
-  },
-  circleIdle: {
-    backgroundColor: colors.surfaceMuted,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   number: {
     ...typography.label,

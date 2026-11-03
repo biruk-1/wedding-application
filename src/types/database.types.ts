@@ -973,14 +973,14 @@ isOneToOne: false
                   ]
                 },"weddings": {
                   Row: {
-                    "city": string | null,"country_code": string,"cover_image_url": string | null,"created_at": string,"created_by": string,"currency_code": string,"estimated_guest_count": number | null,"id": string,"partner_one_name": string,"partner_two_name": string,"status": string,"style": string | null,"timezone": string,"title": string,"updated_at": string,"wedding_date": string | null
+                    "celebration_kind": string,"city": string | null,"country_code": string,"cover_image_url": string | null,"created_at": string,"created_by": string,"currency_code": string,"estimated_guest_count": number | null,"id": string,"partner_one_name": string | null,"partner_two_name": string | null,"status": string,"style": string | null,"timezone": string,"title": string,"updated_at": string,"wedding_date": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "city"?: string | null,"country_code"?: string,"cover_image_url"?: string | null,"created_at"?: string,"created_by": string,"currency_code"?: string,"estimated_guest_count"?: number | null,"id"?: string,"partner_one_name": string,"partner_two_name": string,"status"?: string,"style"?: string | null,"timezone"?: string,"title": string,"updated_at"?: string,"wedding_date"?: string | null
+                    "celebration_kind"?: string,"city"?: string | null,"country_code"?: string,"cover_image_url"?: string | null,"created_at"?: string,"created_by": string,"currency_code"?: string,"estimated_guest_count"?: number | null,"id"?: string,"partner_one_name"?: string | null,"partner_two_name"?: string | null,"status"?: string,"style"?: string | null,"timezone"?: string,"title": string,"updated_at"?: string,"wedding_date"?: string | null
                   }
                   Update: {
-                    "city"?: string | null,"country_code"?: string,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string,"currency_code"?: string,"estimated_guest_count"?: number | null,"id"?: string,"partner_one_name"?: string,"partner_two_name"?: string,"status"?: string,"style"?: string | null,"timezone"?: string,"title"?: string,"updated_at"?: string,"wedding_date"?: string | null
+                    "celebration_kind"?: string,"city"?: string | null,"country_code"?: string,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string,"currency_code"?: string,"estimated_guest_count"?: number | null,"id"?: string,"partner_one_name"?: string | null,"partner_two_name"?: string | null,"status"?: string,"style"?: string | null,"timezone"?: string,"title"?: string,"updated_at"?: string,"wedding_date"?: string | null
                   }
                   Relationships: [
                     {
@@ -1010,9 +1010,33 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"create_guest_invitation":
+{ Args: { "p_delivery_channel"?: string,"p_design_id"?: string,"p_event_ids"?: string[],"p_group_id"?: string,"p_guest_id"?: string,"p_wedding_id": string }; Returns: {
+              "invitation_id": string,"raw_token": string
+            }[]
+                           },
+"get_guest_invitation_by_token":
+{ Args: { "p_raw_token": string }; Returns: Json },
+"mark_guest_invitation_sent":
+{ Args: { "p_invitation_id": string }; Returns: Json },
+"submit_guest_invitation_rsvp":
+{ Args: { "p_event_id": string,"p_guest_id": string,"p_raw_token": string,"p_response": string }; Returns: {
+              "attendance_checked_in_at": string | null,
+"event_id": string,
+"guest_id": string,
+"responded_at": string | null,
+"response": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "guest_rsvps"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_wedding":
-{ Args: { "p_city"?: string,"p_country_code"?: string,"p_currency_code"?: string,"p_estimated_guest_count"?: number,"p_partner_one_name": string,"p_partner_two_name": string,"p_style"?: string,"p_timezone"?: string,"p_title": string,"p_wedding_date"?: string }; Returns: {
-              "city": string | null,
+{ Args: { "p_budget_allocations"?: Json,"p_celebration_kind"?: string,"p_city"?: string,"p_country_code"?: string,"p_currency_code"?: string,"p_estimated_guest_count"?: number,"p_partner_one_name"?: string | null,"p_partner_two_name"?: string | null,"p_style"?: string,"p_timezone"?: string,"p_title": string,"p_total_budget"?: number,"p_wedding_date"?: string }; Returns: {
+              "celebration_kind": string,
+"city": string | null,
 "country_code": string,
 "cover_image_url": string | null,
 "created_at": string,
@@ -1020,8 +1044,8 @@ isOneToOne: false
 "currency_code": string,
 "estimated_guest_count": number | null,
 "id": string,
-"partner_one_name": string,
-"partner_two_name": string,
+"partner_one_name": string | null,
+"partner_two_name": string | null,
 "status": string,
 "style": string | null,
 "timezone": string,

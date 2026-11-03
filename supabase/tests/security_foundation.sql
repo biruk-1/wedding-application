@@ -70,10 +70,25 @@ begin
   perform set_config('role', 'authenticated', true);
 
   select * into w1 from public.create_wedding(
-    'Alpha Wedding', 'Amina', 'Biruk', current_date + 180, 'Addis Ababa'
+    p_title => 'Alpha Celebration',
+    p_partner_one_name => null,
+    p_partner_two_name => null,
+    p_wedding_date => current_date + 180,
+    p_city => 'Addis Ababa',
+    p_celebration_kind => 'birthday',
+    p_total_budget => 10000,
+    p_budget_allocations => '[
+      {"category_slug":"venue","amount":6000},
+      {"category_slug":"food","amount":4000}
+    ]'::jsonb
   );
   if w1.id is null then
     raise exception 'FAIL: create_wedding returned null';
+  end if;
+  if w1.celebration_kind <> 'birthday'
+    or w1.partner_one_name is not null
+    or w1.partner_two_name is not null then
+    raise exception 'FAIL: celebration kind or nullable partner names were not persisted';
   end if;
 
   select count(*) into v_count from public.wedding_members
@@ -82,10 +97,44 @@ begin
     raise exception 'FAIL: owner membership missing after create_wedding';
   end if;
 
-  select count(*) into v_count from public.wedding_budgets where wedding_id = w1.id;
+  select count(*) into v_count
+  from public.wedding_budgets
+  where wedding_id = w1.id
+    and total_budget = 10000
+    and currency_code = 'ETB';
   if v_count <> 1 then
-    raise exception 'FAIL: wedding_budgets row missing after create_wedding';
+    raise exception 'FAIL: exactly one initialized wedding_budgets row expected';
   end if;
+
+  select count(*) into v_count
+  from public.budget_items item
+  join public.budget_categories category on category.id = item.category_id
+  where item.wedding_id = w1.id
+    and item.label = category.name_en
+    and (
+      (category.slug = 'venue' and item.estimated_amount = 6000)
+      or (category.slug = 'food' and item.estimated_amount = 4000)
+    );
+  if v_count <> 2 then
+    raise exception 'FAIL: expected two category-linked onboarding budget items';
+  end if;
+
+  begin
+    perform public.create_wedding(
+      p_title => 'Overallocated',
+      p_partner_one_name => 'A',
+      p_partner_two_name => 'B',
+      p_total_budget => 100,
+      p_budget_allocations => '[{"category_slug":"venue","amount":101}]'::jsonb
+    );
+    raise exception 'FAIL: overallocated budget should be rejected';
+  exception
+    when others then
+      if sqlerrm like 'FAIL:%' then raise; end if;
+      if sqlerrm not like '%cannot exceed total_budget%' then
+        raise exception 'FAIL: unexpected over-allocation error: %', sqlerrm;
+      end if;
+  end;
 
   -- Other user creates a separate wedding
   perform set_config('request.jwt.claim.sub', u_other::text, true);

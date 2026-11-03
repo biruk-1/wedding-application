@@ -1,7 +1,7 @@
 import { StyleSheet, View, type ViewProps } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 
 export type BrandMarkProps = ViewProps & {
   size?: number;
@@ -12,7 +12,9 @@ export type BrandMarkProps = ViewProps & {
  * Approximates the gold interlaced monogram from the Kiburan reference sheet.
  * Replace with the official SVG asset when available.
  */
-export function BrandMark({ size = 56, color = colors.primary, style, ...rest }: BrandMarkProps) {
+export function BrandMark({ size = 56, color, style, ...rest }: BrandMarkProps) {
+  const colors = useColors();
+  const markColor = color ?? colors.primary;
   return (
     <View
       accessibilityRole="image"
@@ -20,22 +22,22 @@ export function BrandMark({ size = 56, color = colors.primary, style, ...rest }:
       style={[styles.wrap, { width: size, height: size }, style]}
       {...rest}>
       <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <Circle cx="32" cy="32" r="30" stroke={color} strokeWidth="1.5" opacity={0.55} />
+        <Circle cx="32" cy="32" r="30" stroke={markColor} strokeWidth="1.5" opacity={0.55} />
         <Path
           d="M22 18c0 10 6 14 10 18-4 4-10 8-10 18"
-          stroke={color}
+          stroke={markColor}
           strokeWidth="2.4"
           strokeLinecap="round"
         />
         <Path
           d="M42 18c0 10-6 14-10 18 4 4 10 8 10 18"
-          stroke={color}
+          stroke={markColor}
           strokeWidth="2.4"
           strokeLinecap="round"
         />
         <Path
           d="M26 32h12"
-          stroke={color}
+          stroke={markColor}
           strokeWidth="2"
           strokeLinecap="round"
           opacity={0.85}

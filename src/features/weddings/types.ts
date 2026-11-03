@@ -11,10 +11,26 @@ export type WeddingMembership = {
   wedding: Wedding;
 };
 
+export type CelebrationKind =
+  | 'wedding'
+  | 'shemgelena'
+  | 'qelekel'
+  | 'baby_shower'
+  | 'birthday'
+  | 'anniversary'
+  | 'graduation'
+  | 'other';
+
+export type BudgetAllocationInput = {
+  categorySlug: string;
+  amount: number;
+};
+
 export type CreateWeddingInput = {
   title: string;
-  partnerOneName: string;
-  partnerTwoName: string;
+  celebrationKind?: CelebrationKind;
+  partnerOneName?: string | null;
+  partnerTwoName?: string | null;
   weddingDate?: string | null;
   city?: string | null;
   style?: string | null;
@@ -22,4 +38,6 @@ export type CreateWeddingInput = {
   timezone?: string;
   currencyCode?: string;
   estimatedGuestCount?: number | null;
+  totalBudget?: number;
+  budgetAllocations?: BudgetAllocationInput[];
 };

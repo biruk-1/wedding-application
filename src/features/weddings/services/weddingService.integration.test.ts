@@ -49,16 +49,25 @@ describe('wedding creation against local Supabase', () => {
     if (!ready) skip();
 
     const { data, error } = await supabase.rpc('create_wedding', {
-      p_title: 'Hana & Daniel',
-      p_partner_one_name: 'Hana',
-      p_partner_two_name: 'Daniel',
+      p_title: 'Hana Birthday',
+      p_partner_one_name: null,
+      p_partner_two_name: null,
       p_wedding_date: '2026-08-15',
       p_city: 'Addis Ababa',
       p_style: 'traditional',
+      p_celebration_kind: 'birthday',
+      p_total_budget: 10_000,
+      p_budget_allocations: [
+        { category_slug: 'venue', amount: 6_000 },
+        { category_slug: 'food', amount: 4_000 },
+      ],
     });
 
     expect(error).toBeNull();
     expect(data?.id).toBeTruthy();
+    expect(data?.celebration_kind).toBe('birthday');
+    expect(data?.partner_one_name).toBeNull();
+    expect(data?.partner_two_name).toBeNull();
     weddingId = data!.id;
 
     const { data: userData } = await supabase.auth.getUser();
@@ -71,6 +80,27 @@ describe('wedding creation against local Supabase', () => {
 
     expect(memberError).toBeNull();
     expect(member?.role).toBe('owner');
+
+    const { data: budget, error: budgetError } = await supabase
+      .from('wedding_budgets')
+      .select('total_budget, currency_code')
+      .eq('wedding_id', weddingId)
+      .single();
+    expect(budgetError).toBeNull();
+    expect(budget).toMatchObject({ total_budget: 10_000, currency_code: 'ETB' });
+
+    const { data: items, error: itemsError } = await supabase
+      .from('budget_items')
+      .select('label, estimated_amount, category:budget_categories(slug)')
+      .eq('wedding_id', weddingId);
+    expect(itemsError).toBeNull();
+    expect(items).toHaveLength(2);
+    expect(items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: 'Venue', estimated_amount: 6_000 }),
+        expect.objectContaining({ label: 'Food & drink', estimated_amount: 4_000 }),
+      ]),
+    );
   });
 
   it('lists only the authenticated user memberships', async ({ skip }) => {

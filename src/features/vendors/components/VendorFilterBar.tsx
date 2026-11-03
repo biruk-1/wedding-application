@@ -1,12 +1,14 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import type { VendorCategory, VendorFilters } from '@/features/vendors/types';
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
+import type { AppColors } from '@/theme/types';
 
 const PRICE_PRESETS: { label: string; min: number | null; max: number | null }[] = [
   { label: 'Any price', min: null, max: null },
@@ -22,6 +24,7 @@ export function VendorFilterBar({
   cities,
   onReset,
   hasActiveFilters,
+  hideSearch = false,
 }: {
   filters: VendorFilters;
   onChange: (next: VendorFilters) => void;
@@ -29,17 +32,23 @@ export function VendorFilterBar({
   cities: string[];
   onReset: () => void;
   hasActiveFilters: boolean;
+  /** When true, omit the built-in search field (parent uses SearchField). */
+  hideSearch?: boolean;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.wrap}>
-      <TextInput
-        value={filters.query}
-        onChangeText={(query) => onChange({ ...filters, query })}
-        placeholder="Search vendors…"
-        placeholderTextColor={colors.textSubtle}
-        style={styles.search}
-        accessibilityLabel="Search vendors"
-      />
+      {!hideSearch ? (
+        <TextInput
+          value={filters.query}
+          onChangeText={(query) => onChange({ ...filters, query })}
+          placeholder="Search vendors…"
+          placeholderTextColor={colors.textSubtle}
+          style={styles.search}
+          accessibilityLabel="Search vendors"
+        />
+      ) : null}
 
       <AppText variant="caption" color="textMuted">
         Categories
@@ -53,7 +62,7 @@ export function VendorFilterBar({
           <AppText
             variant="caption"
             style={{ color: !filters.categoryId ? colors.onPrimary : colors.textMuted }}>
-            All
+            All Vendors
           </AppText>
         </Pressable>
         {categories.map((category) => {
@@ -146,13 +155,14 @@ export function VendorFilterBar({
       </ScrollView>
 
       {hasActiveFilters ? (
-        <Button label="Reset filters" variant="ghost" onPress={onReset} />
+        <Button label="Reset filters" variant="secondary" size="compact" onPress={onReset} />
       ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   wrap: {
     gap: spacing.sm,
     marginBottom: spacing.lg,
@@ -192,4 +202,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successMuted,
     borderColor: colors.success,
   },
-});
+  });
+}

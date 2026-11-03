@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable } from 'react-native';
 
 import { TextField, type TextFieldProps } from '@/components/ui/TextField';
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 
 export type PasswordFieldProps = Omit<TextFieldProps, 'secureTextEntry' | 'trailing'> & {
   toggleAccessibilityLabel?: string;
@@ -13,6 +13,7 @@ export function PasswordField({
   toggleAccessibilityLabel = 'Show or hide password',
   ...rest
 }: PasswordFieldProps) {
+  const colors = useColors();
   const [visible, setVisible] = useState(false);
 
   return (

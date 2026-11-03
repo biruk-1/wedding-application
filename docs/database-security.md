@@ -41,8 +41,12 @@ Status: **provisional first version** for local development. Role capabilities b
 ### `create_wedding(...)`
 
 - Requires authenticated user.
-- Inserts wedding (`created_by = auth.uid()`), owner membership, and empty `wedding_budgets` in one transaction.
-- Does **not** yet seed checklist tasks (optional; pending product confirmation).
+- Extended by `20261103180000_celebration_onboarding.sql` for eight celebration kinds.
+- Inserts the celebration (`created_by = auth.uid()`), owner membership, budget total, and initial allocation items in one transaction.
+- Allows nullable partner columns for non-wedding celebrations, but validates that weddings have two nonblank partner names.
+- Rejects invalid kinds, negative totals/counts/allocations, unknown budget category slugs, and allocations exceeding the total budget.
+- Keeps the original argument order and defaulted new arguments for existing caller compatibility.
+- Does **not** seed event-specific checklist templates.
 
 ### `create_wedding_invite(...)`
 
@@ -74,14 +78,14 @@ No wedding, guest, budget, invite, or private contact access for `anon`.
 ## Known gaps (do not treat as closed)
 
 1. No platform admin / moderator role.
-2. Guest invitation public RSVP-by-token RPC not implemented.
-3. Invite email/phone binding not enforced.
+2. ~~Guest invitation public RSVP-by-token RPC not implemented.~~ Closed by `20260330120000_guest_invitation_rpcs.sql` (`create_guest_invitation`, `get_guest_invitation_by_token`, `submit_guest_invitation_rsvp`, `mark_guest_invitation_sent`). Residual gaps: no rate limiting or token expiry on the anon RPCs. Anon still has no table policies on guests/invitations — only those RPCs.
+3. Invite email/phone binding not enforced (collaborator invites).
 4. Soft-delete / account deletion policy unresolved (audit Q3).
 5. Storage bucket policies not defined (paths only).
-6. Column revoke on `invitations.token_hash` still allows writers to set hashes (guest invite RPC preferred later).
+6. ~~Column revoke on `invitations.token_hash` still allows writers to set hashes.~~ Guest invites must use `create_guest_invitation` (app path). Direct client inserts of `token_hash` remain technically possible under write RLS and should stay unused.
 
 ## Security tests
 
 See `supabase/tests/security_foundation.sql` and `npm run db:test:security`.
 
-**Executed locally (2026-10-25):** `supabase/tests/security_foundation.sql` completed with `NOTICE: PASS: security_foundation checks completed` against `postgresql://postgres@127.0.0.1:54322` after `npm run db:reset`.
+**Current evidence:** the security SQL suite passed, including the celebration-onboarding RPC coverage. The broader verification also passed typecheck, 34 files / 207 tests, and Expo Doctor 20/20; lint had 0 errors and the known generated-file warning.

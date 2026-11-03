@@ -7,6 +7,7 @@ import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { normalizeCelebrationKind } from '@/features/weddings/celebrationCopy';
 import { useMyWeddings } from '@/features/weddings/hooks/useMyWeddings';
 import { OnboardingWelcomeScreen } from '@/features/weddings/screens/OnboardingWelcomeScreen';
 import { spacing } from '@/theme/spacing';
@@ -18,6 +19,9 @@ export function AppHomeHubScreen() {
   const router = useRouter();
   const { memberships, isLoading, error, refresh } = useMyWeddings();
   const singleId = memberships.length === 1 ? memberships[0]?.wedding_id : null;
+  const includesOtherCelebrations = memberships.some(
+    ({ wedding }) => normalizeCelebrationKind(wedding.celebration_kind) !== 'wedding',
+  );
 
   useEffect(() => {
     if (isLoading || error || !singleId) return;
@@ -59,12 +63,16 @@ export function AppHomeHubScreen() {
       <StatusBar style="dark" />
       <View style={styles.center}>
         <AppText variant="title" style={styles.title}>
-          Choose a wedding
+          {includesOtherCelebrations ? 'Choose a celebration' : 'Choose a wedding'}
         </AppText>
         <AppText variant="body" color="textMuted" style={styles.copy}>
-          You belong to {memberships.length} weddings.
+          You belong to {memberships.length}{' '}
+          {includesOtherCelebrations ? 'celebrations' : 'weddings'}.
         </AppText>
-        <Button label="View weddings" onPress={() => router.push('/(app)/weddings' as Href)} />
+        <Button
+          label={includesOtherCelebrations ? 'View celebrations' : 'View weddings'}
+          onPress={() => router.push('/(app)/weddings' as Href)}
+        />
         <Button
           label="Create another"
           variant="secondary"

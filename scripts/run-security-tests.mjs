@@ -12,7 +12,7 @@ const dbUrl =
 const psql = spawnSync(
   'psql',
   [dbUrl, '-v', 'ON_ERROR_STOP=1', '-f', sqlFile],
-  { stdio: 'inherit', shell: true }
+  { stdio: 'inherit' }
 );
 
 if (psql.error) {

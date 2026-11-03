@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,10 +8,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
+import type { AppColors } from '@/theme/types';
 
 export type TextFieldProps = TextInputProps & {
   label?: string;
@@ -33,6 +34,8 @@ export function TextField({
   onBlur,
   ...rest
 }: TextFieldProps) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [focused, setFocused] = useState(false);
   const hasError = Boolean(error);
 
@@ -74,7 +77,8 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.xs,
     alignSelf: 'stretch',
@@ -124,4 +128,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.danger,
   },
-});
+  });
+}

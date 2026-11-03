@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
 import { authStorage } from '@/lib/authStorage';
+import { createFetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { resolveSupabaseUrl } from '@/lib/supabaseUrl';
 import type { Database } from '@/types/database.types';
 
@@ -33,10 +34,13 @@ export const supabase: SupabaseClient<Database> = createClient<Database>(
       detectSessionInUrl: Platform.OS === 'web' && typeof window !== 'undefined',
       flowType: 'pkce',
     },
+    global: {
+      fetch: createFetchWithTimeout(),
+    },
   },
 );
 
-if (__DEV__) {
+if (__DEV__ && isClientRuntime) {
   // Helpful when debugging Expo Go ↔ local Supabase connectivity.
   // Does not log keys or tokens.
   console.log(`[kiburan] Supabase URL → ${supabaseUrl}`);

@@ -4,9 +4,10 @@ Values tuned from the approved Kiburan reference sheet (welcome, onboarding, das
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `colors.surface` | `#FDFBF7` | Warm ivory app background |
-| `colors.primary` | `#C5A36A` | Champagne gold CTAs |
-| `colors.success` / `colors.text` | `#2D4F36` | Forest green titles, progress, Save |
+| `colors.surface` | `#F8F5EF` (Modern default) | Warm ivory app background — see `docs/adaptive-wedding-themes.md` |
+| `colors.primary` | `#C6A064` | Champagne gold CTAs |
+| `colors.heading` / `colors.success` | `#315B48` | Screen titles, progress, Save |
+| `colors.text` | `#2A2E2C` | Body copy (charcoal) |
 | `colors.danger` | `#C45B4A` | Destructive / high priority |
 | `typography.display` | Cormorant Garamond | Logo / screen titles |
 | `typography.body` | DM Sans | UI copy |

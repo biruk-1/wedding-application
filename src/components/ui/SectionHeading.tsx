@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, type ViewProps } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { useColors, useDecorations } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 
@@ -10,10 +10,18 @@ export type SectionHeadingProps = ViewProps & {
 };
 
 export function SectionHeading({ title, subtitle, style, ...rest }: SectionHeadingProps) {
+  const colors = useColors();
+  const decorations = useDecorations();
   return (
     <View style={[styles.container, style]} {...rest}>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      <Text style={[styles.title, { color: colors.heading }]}>{title}</Text>
+      {decorations.sectionGoldLine ? (
+        <View
+          accessibilityElementsHidden
+          style={[styles.goldLine, { backgroundColor: colors.primary }]}
+        />
+      ) : null}
+      {subtitle ? <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text> : null}
     </View>
   );
 }
@@ -25,10 +33,13 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title,
-    color: colors.text,
+  },
+  goldLine: {
+    width: 44,
+    height: 2,
+    borderRadius: 1,
   },
   subtitle: {
     ...typography.body,
-    color: colors.textMuted,
   },
 });

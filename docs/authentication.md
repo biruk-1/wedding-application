@@ -95,6 +95,8 @@ In the dashboard → **Authentication → URL configuration**:
 | Signed in | `/(app)` (minimal home + sign out). Public auth screens redirect here. |
 | Recovery session | `/reset-password` to set a new password |
 
+Signing out (or a session expiring) on a protected screen redirects to `/login`. It cannot target `/`: both `app/index.tsx` and `app/(app)/index.tsx` match `/`, and Expo Router resolves the match inside the current `(app)` group. The welcome screen stays one "Go back" away.
+
 Wedding dashboard / create-wedding workflow are **not** part of this task.
 
 ## Testing locally

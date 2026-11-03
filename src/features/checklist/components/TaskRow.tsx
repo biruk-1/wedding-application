@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
@@ -6,9 +7,10 @@ import { Badge } from '@/components/ui/Badge';
 import type { TaskWithRelations } from '@/features/checklist/types';
 import { isTaskOverdue, statusLabel } from '@/features/checklist/utils/taskHelpers';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
 
 export function TaskRow({
   task,
@@ -21,6 +23,8 @@ export function TaskRow({
   onToggleComplete: () => void;
   canWrite: boolean;
 }) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const done = task.status === 'done';
   const overdue = isTaskOverdue(task);
 
@@ -70,7 +74,8 @@ export function TaskRow({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -119,4 +124,5 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.xs,
   },
-});
+  });
+}

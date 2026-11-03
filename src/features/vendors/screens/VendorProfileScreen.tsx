@@ -26,11 +26,13 @@ import {
   resolveMediaUrl,
   vendorCoverUrl,
 } from '@/features/vendors/utils/vendorHelpers';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 export function VendorProfileScreen() {
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const { weddingId, vendorId } = useLocalSearchParams<{
     weddingId: string;
@@ -342,7 +344,8 @@ export function VendorProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   hero: {
     width: '100%',
     height: 200,
@@ -402,4 +405,5 @@ const styles = StyleSheet.create({
   center: {
     textAlign: 'center',
   },
-});
+  });
+}

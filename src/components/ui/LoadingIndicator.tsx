@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, View, type ViewProps } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 
@@ -12,19 +12,20 @@ export type LoadingIndicatorProps = ViewProps & {
 
 export function LoadingIndicator({
   label,
-  color = colors.primary,
+  color,
   size = 'large',
   style,
   ...rest
 }: LoadingIndicatorProps) {
+  const colors = useColors();
   return (
     <View
       accessibilityRole="progressbar"
       accessibilityLabel={label ?? 'Loading'}
       style={[styles.container, style]}
       {...rest}>
-      <ActivityIndicator color={color} size={size} />
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      <ActivityIndicator color={color ?? colors.primary} size={size} />
+      {label ? <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text> : null}
     </View>
   );
 }
@@ -38,6 +39,5 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.caption,
-    color: colors.textMuted,
   },
 });

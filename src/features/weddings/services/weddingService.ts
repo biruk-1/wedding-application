@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { CreateWeddingInput, Wedding, WeddingMembership } from '@/features/weddings/types';
+import type { Database } from '@/types/database.types';
 import { mapWeddingError, type WeddingUserMessage } from '@/features/weddings/services/weddingErrors';
 
 export type WeddingResult<T> =
@@ -17,8 +18,8 @@ function fail(error: { message?: string; code?: string } | Error | null): Weddin
 export async function createWedding(input: CreateWeddingInput): Promise<WeddingResult<Wedding>> {
   const { data, error } = await supabase.rpc('create_wedding', {
     p_title: input.title.trim(),
-    p_partner_one_name: input.partnerOneName.trim(),
-    p_partner_two_name: input.partnerTwoName.trim(),
+    p_partner_one_name: input.partnerOneName?.trim() || null,
+    p_partner_two_name: input.partnerTwoName?.trim() || null,
     p_wedding_date: input.weddingDate ?? undefined,
     p_city: input.city?.trim() || undefined,
     p_country_code: input.countryCode ?? 'ET',
@@ -26,6 +27,12 @@ export async function createWedding(input: CreateWeddingInput): Promise<WeddingR
     p_style: input.style ?? undefined,
     p_currency_code: input.currencyCode ?? 'ETB',
     p_estimated_guest_count: input.estimatedGuestCount ?? undefined,
+    p_celebration_kind: input.celebrationKind ?? 'wedding',
+    p_total_budget: input.totalBudget ?? 0,
+    p_budget_allocations: (input.budgetAllocations ?? []).map((allocation) => ({
+      category_slug: allocation.categorySlug,
+      amount: allocation.amount,
+    })),
   });
 
   if (error) return fail(error);
@@ -81,6 +88,47 @@ export async function getWeddingById(weddingId: string): Promise<WeddingResult<W
     .from('weddings')
     .select('*')
     .eq('id', weddingId)
+    .maybeSingle();
+
+  if (error) return fail(error);
+  if (!data) {
+    return {
+      ok: false,
+      error: {
+        code: 'not_found',
+        message: 'Wedding not found or you do not have access.',
+      },
+    };
+  }
+  return { ok: true, data };
+}
+
+export type UpdateWeddingInput = {
+  style?: string | null;
+  title?: string;
+  city?: string | null;
+  weddingDate?: string | null;
+};
+
+export async function updateWedding(
+  weddingId: string,
+  input: UpdateWeddingInput,
+): Promise<WeddingResult<Wedding>> {
+  const patch: Database['public']['Tables']['weddings']['Update'] = {};
+  if (input.style !== undefined) patch.style = input.style;
+  if (input.title !== undefined) patch.title = input.title.trim();
+  if (input.city !== undefined) patch.city = input.city?.trim() || null;
+  if (input.weddingDate !== undefined) patch.wedding_date = input.weddingDate;
+
+  if (Object.keys(patch).length === 0) {
+    return getWeddingById(weddingId);
+  }
+
+  const { data, error } = await supabase
+    .from('weddings')
+    .update(patch)
+    .eq('id', weddingId)
+    .select('*')
     .maybeSingle();
 
   if (error) return fail(error);

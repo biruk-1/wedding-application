@@ -5,22 +5,28 @@ import { StyleSheet, View } from 'react-native';
 import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { colors } from '@/theme/colors';
+import { getCelebrationCopy } from '@/features/weddings/celebrationCopy';
+import { useWedding } from '@/features/weddings/queries';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 export function WeddingCreatedScreen() {
   const router = useRouter();
   const { weddingId } = useLocalSearchParams<{ weddingId: string }>();
+  const wedding = useWedding(weddingId).data;
+  const copy = getCelebrationCopy(wedding?.celebration_kind);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <Screen>
       <StatusBar style="dark" />
       <View style={styles.content}>
         <AppText variant="title" style={styles.title}>
-          Wedding created
+          {copy.successTitle}
         </AppText>
         <AppText variant="body" color="textMuted" style={styles.body}>
-          Your wedding space is ready. You are the owner and can invite partners later.
+          {copy.successBody}
         </AppText>
         <Button
           label="Go to dashboard"
@@ -37,7 +43,8 @@ export function WeddingCreatedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
@@ -50,4 +57,5 @@ const styles = StyleSheet.create({
   body: {
     textAlign: 'center',
   },
-});
+  });
+}

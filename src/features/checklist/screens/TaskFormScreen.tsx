@@ -8,6 +8,7 @@ import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { AppDatePicker } from '@/components/ui/AppDatePicker';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
 import {
@@ -24,11 +25,14 @@ import {
   taskStatuses,
 } from '@/features/checklist/validation/taskSchemas';
 import { statusLabel } from '@/features/checklist/utils/taskHelpers';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useColors } from '@/theme/WeddingThemeContext';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
 export function TaskFormScreen({ mode }: { mode: 'create' | 'edit' }) {
+  const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const { weddingId, taskId } = useLocalSearchParams<{ weddingId: string; taskId?: string }>();
   const [title, setTitle] = useState('');
@@ -178,15 +182,15 @@ export function TaskFormScreen({ mode }: { mode: 'create' | 'edit' }) {
             />
           ))}
         </View>
-        <TextField
+        <AppDatePicker
           label="Due date"
-          placeholder="YYYY-MM-DD"
           value={dueDate}
-          onChangeText={setDueDate}
+          onChange={setDueDate}
+          onClear={() => setDueDate('')}
           helperText="Optional"
           error={fieldErrors.dueDate}
-          editable={!submitting}
-          autoCapitalize="none"
+          disabled={submitting}
+          placeholder="Select due date"
         />
         <AppText variant="label">Priority</AppText>
         <View style={styles.chips}>
@@ -244,6 +248,9 @@ function Chip({
   selected: boolean;
   onPress: () => void;
 }) {
+  const colors = useColors();
+  const styles = useThemedStyles(createStyles);
+
   return (
     <Pressable
       onPress={onPress}
@@ -259,7 +266,8 @@ function Chip({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   form: {
     gap: spacing.lg,
     paddingBottom: spacing['2xl'],
@@ -285,4 +293,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-});
+  });
+}

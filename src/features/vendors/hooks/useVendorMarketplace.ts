@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import {
+  getVendorPersonalization,
+  rankVendorsForCelebration,
+  resolveRecommendedCategories,
+} from '@/features/vendors/config/vendorPersonalization';
 import type { VendorUserMessage } from '@/features/vendors/services/vendorErrors';
 import {
   listPublishedVendors,
@@ -12,7 +17,7 @@ import {
   uniqueCities,
 } from '@/features/vendors/utils/vendorHelpers';
 
-export function useVendorMarketplace() {
+export function useVendorMarketplace(celebrationKind?: string | null) {
   const [vendors, setVendors] = useState<VendorListItem[]>([]);
   const [categories, setCategories] = useState<VendorCategory[]>([]);
   const [filters, setFilters] = useState<VendorFilters>(emptyFilters);
@@ -62,16 +67,30 @@ export function useVendorMarketplace() {
   );
 
   const filtered = useMemo(
-    () => filterVendors(vendors, activeFilters),
-    [vendors, activeFilters],
+    () =>
+      rankVendorsForCelebration(
+        filterVendors(vendors, activeFilters),
+        celebrationKind,
+      ),
+    [vendors, activeFilters, celebrationKind],
   );
 
   const cities = useMemo(() => uniqueCities(vendors), [vendors]);
+  const personalization = useMemo(
+    () => getVendorPersonalization(celebrationKind),
+    [celebrationKind],
+  );
+  const recommendedCategories = useMemo(
+    () => resolveRecommendedCategories(celebrationKind, categories),
+    [categories, celebrationKind],
+  );
 
   return {
     vendors,
     filtered,
     categories,
+    personalization,
+    recommendedCategories,
     cities,
     filters,
     setFilters,

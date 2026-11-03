@@ -2,15 +2,24 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import type { ChecklistProgress } from '@/features/checklist/types';
-import { colors } from '@/theme/colors';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
+import type { AppColors } from '@/theme/types';
+import { useThemedStyles } from '@/theme/useThemedStyles';
 
-export function ProgressHeader({ progress }: { progress: ChecklistProgress }) {
+export function ProgressHeader({
+  progress,
+  label = 'Wedding progress',
+}: {
+  progress: ChecklistProgress;
+  label?: string;
+}) {
+  const styles = useThemedStyles(createStyles);
+
   return (
-    <View style={styles.wrap} accessibilityLabel={`Checklist ${progress.percent}% complete`}>
+    <View style={styles.wrap} accessibilityLabel={`${label} ${progress.percent}% complete`}>
       <View style={styles.row}>
-        <AppText variant="label">Wedding progress</AppText>
+        <AppText variant="label">{label}</AppText>
         <AppText variant="label" color="success">
           {progress.percent}%
         </AppText>
@@ -27,7 +36,8 @@ export function ProgressHeader({ progress }: { progress: ChecklistProgress }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   wrap: {
     gap: spacing.sm,
     marginBottom: spacing.lg,
@@ -48,4 +58,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
     borderRadius: radii.pill,
   },
-});
+  });
+}
