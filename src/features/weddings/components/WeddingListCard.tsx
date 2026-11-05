@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Card } from '@/components/ui/Card';
+import { formatMemberRoleLabel } from '@/features/team/utils/roleLabels';
 import { getCelebrationCopy } from '@/features/weddings/celebrationCopy';
 import type { WeddingMembership } from '@/features/weddings/types';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
@@ -20,11 +21,12 @@ export function WeddingListCard({
   const { wedding, role } = membership;
   const copy = getCelebrationCopy(wedding.celebration_kind);
   const dateLabel = formatWeddingDateLabel(wedding.wedding_date);
+  const roleLabel = formatMemberRoleLabel(role);
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Open ${wedding.title}`}
+      accessibilityLabel={`Open ${wedding.title}, ${roleLabel}`}
       onPress={onPress}
       style={({ pressed }) => [pressed && styles.pressed]}>
       <Card style={styles.card}>
@@ -33,7 +35,7 @@ export function WeddingListCard({
             {wedding.title}
           </AppText>
           <AppText variant="caption" color="primary" style={styles.role}>
-            {role}
+            {roleLabel}
           </AppText>
         </View>
         {copy.kind === 'wedding' ? (
@@ -72,7 +74,7 @@ function createStyles(colors: AppColors) {
     fontSize: 20,
   },
   role: {
-    textTransform: 'capitalize',
+    flexShrink: 0,
   },
   });
 }

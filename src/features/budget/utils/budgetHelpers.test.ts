@@ -135,6 +135,7 @@ describe('budgetHelpers', () => {
       committed_amount: 5000,
       notes: null,
       created_at: '2026-01-01',
+      item_kind: 'expense',
       payments: [{ id: 'p', amount: 2000, paid_at: '2026-01-02', payment_method: 'cash', reference: null }],
     });
     expect(item.paid_total).toBe(2000);

@@ -60,6 +60,7 @@ export function enrichBudgetItem(
     committed_amount: item.committed_amount != null ? Number(item.committed_amount) : null,
     notes: item.notes,
     created_at: item.created_at,
+    item_kind: item.item_kind,
     category: item.category ?? null,
     paid_total: paid,
     due_amount: due,

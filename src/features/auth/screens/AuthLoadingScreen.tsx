@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand/BrandMark';
+import { ThemedBackground } from '@/components/theme/ThemedBackground';
 import { AppText } from '@/components/ui/AppText';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { radii } from '@/theme/radii';
@@ -25,6 +26,7 @@ export function AuthLoadingScreen({
       style={styles.root}
       accessibilityRole="progressbar"
       accessibilityLabel={label}>
+      <ThemedBackground />
       <BrandMark size={48} color={colors.primary} />
       <AppText variant="title" style={styles.brand}>
         Kiburan

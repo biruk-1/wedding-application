@@ -21,14 +21,20 @@ import { useAuthGate } from '@/features/auth/hooks/useAuthGate';
 import { AuthLoadingScreen } from '@/features/auth/screens/AuthLoadingScreen';
 import { subscribeAppFocus } from '@/lib/query/appFocus';
 import { queryClient } from '@/lib/query/queryClient';
-import { WeddingThemeProvider, useColors } from '@/theme/WeddingThemeContext';
+import { WeddingThemeProvider, useWeddingTheme } from '@/theme/WeddingThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { isLoading } = useAuth();
   useAuthGate();
-  const colors = useColors();
+  const { colors, isHydrated } = useWeddingTheme();
+
+  useEffect(() => {
+    if (fontsReady && isHydrated) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsReady, isHydrated]);
 
   const kiburanNavigationTheme = useMemo(
     () => ({
@@ -46,7 +52,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
     [colors],
   );
 
-  if (!fontsReady) {
+  if (!fontsReady || !isHydrated) {
     return <AuthLoadingScreen label="Loading Kiburan…" />;
   }
 
@@ -56,19 +62,23 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
 
   return (
     <ThemeProvider value={kiburanNavigationTheme}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.surface },
+          animation: 'slide_from_right',
+          animationDuration: 280,
+          gestureEnabled: true,
         }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="register" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="forgot-password" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="reset-password" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="index" options={{ animation: 'fade' }} />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="register" />
+        <Stack.Screen name="forgot-password" />
+        <Stack.Screen name="reset-password" />
         <Stack.Screen name="invite/[token]" options={{ animation: 'fade' }} />
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+        <Stack.Screen name="join/[token]" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(app)" options={{ headerShown: false, animation: 'fade' }} />
         {/* Legacy Expo template routes — auth gate sends signed-in users to /(app), not here */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
@@ -86,12 +96,6 @@ export default function RootLayout() {
     DMSans_700Bold,
   });
   const fontsReady = fontsLoaded || Boolean(fontError);
-
-  useEffect(() => {
-    if (fontsReady) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsReady]);
 
   useEffect(() => subscribeAppFocus(), []);
 

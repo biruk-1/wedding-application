@@ -28,26 +28,29 @@ export function DashboardSkeleton() {
 
   return (
     <View style={styles.stack} accessibilityLabel="Loading wedding dashboard">
-      <SkeletonCard style={styles.gapSm}>
-        <Skeleton width={64} height={12} />
-        <Skeleton width="70%" height={24} />
-        <Skeleton width={90} height={12} />
-      </SkeletonCard>
-      <View style={styles.gapSm}>
-        <Skeleton width={80} height={12} style={styles.center} />
-        <View style={styles.countdownRow}>
-          {[0, 1, 2].map((index) => (
-            <Skeleton key={index} width="31%" height={84} radius={radii.lg} />
-          ))}
+      <Skeleton width="100%" height={280} radius={radii.xl} style={styles.gapMd} />
+      <View style={[styles.gapSm, styles.sectionGap]}>
+        <View style={styles.spaceBetween}>
+          <Skeleton width={140} height={14} />
+          <Skeleton width={40} height={14} />
         </View>
+        <Skeleton width="100%" height={8} radius={radii.pill} />
+        <Skeleton width="55%" height={12} />
       </View>
-      {[0, 1].map((index) => (
-        <SkeletonCard key={index} style={styles.gapMd}>
-          <Skeleton width={110} height={14} />
-          <Skeleton width="90%" height={14} />
-          <Skeleton width="100%" height={BUTTON_HEIGHT} radius={radii.pill} />
-        </SkeletonCard>
-      ))}
+      <View style={[styles.shortcutRow, styles.sectionGap]}>
+        {[0, 1, 2].map((index) => (
+          <SkeletonCard key={index} style={styles.shortcutTile}>
+            <Skeleton width={48} height={48} radius={radii.md} />
+            <Skeleton width="70%" height={12} />
+            <Skeleton width="50%" height={10} />
+          </SkeletonCard>
+        ))}
+      </View>
+      <SkeletonCard style={styles.gapMd}>
+        <Skeleton width={110} height={14} />
+        <Skeleton width="90%" height={14} />
+        <Skeleton width="100%" height={BUTTON_HEIGHT} radius={radii.pill} />
+      </SkeletonCard>
     </View>
   );
 }
@@ -70,18 +73,15 @@ export function ChecklistSkeleton({ rows = 5 }: { rows?: number }) {
 
   return (
     <View accessibilityLabel="Loading checklist">
-      <View style={[styles.gapSm, styles.sectionGap]}>
-        <View style={styles.spaceBetween}>
-          <Skeleton width={130} height={14} />
-          <Skeleton width={36} height={14} />
+      <View style={[styles.ringRow, styles.sectionGap]}>
+        <Skeleton width={88} height={88} radius={44} />
+        <View style={styles.taskBody}>
+          <Skeleton width="60%" height={14} />
+          <Skeleton width="80%" height={12} />
         </View>
-        <Skeleton width="100%" height={8} radius={radii.pill} />
-        <Skeleton width="55%" height={12} />
       </View>
       <View style={[styles.gapSm, styles.sectionGap]}>
-        <Skeleton width="100%" height={INPUT_HEIGHT} />
-        <ChipRow count={5} />
-        <ChipRow count={4} />
+        <ChipRow count={3} />
       </View>
       <View style={styles.gapMd}>
         {Array.from({ length: rows }, (_, index) => (
@@ -111,6 +111,8 @@ export function MarketplaceSkeleton({ cards = 3 }: { cards?: number }) {
 
   return (
     <View accessibilityLabel="Loading vendors">
+      <Skeleton width={160} height={22} style={styles.sectionGap} />
+      <Skeleton width="100%" height={148} radius={radii.lg} style={styles.sectionGap} />
       <View style={[styles.gapSm, styles.sectionGap]}>
         <Skeleton width="100%" height={INPUT_HEIGHT} />
         <Skeleton width={80} height={12} />
@@ -399,6 +401,21 @@ const styles = StyleSheet.create({
   countdownRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  shortcutRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  shortcutTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.md,
+  },
+  ringRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
   },
   chipRow: {
     flexDirection: 'row',

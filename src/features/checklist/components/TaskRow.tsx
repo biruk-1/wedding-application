@@ -7,10 +7,9 @@ import { Badge } from '@/components/ui/Badge';
 import type { TaskWithRelations } from '@/features/checklist/types';
 import { isTaskOverdue, statusLabel } from '@/features/checklist/utils/taskHelpers';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
-import { useColors } from '@/theme/WeddingThemeContext';
-import { radii } from '@/theme/radii';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
-import type { AppColors } from '@/theme/types';
+import type { AppColors, ThemeDecorations } from '@/theme/types';
 
 export function TaskRow({
   task,
@@ -23,8 +22,8 @@ export function TaskRow({
   onToggleComplete: () => void;
   canWrite: boolean;
 }) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, decorations } = useWeddingTheme();
+  const styles = useMemo(() => createStyles(colors, decorations), [colors, decorations]);
   const done = task.status === 'done';
   const overdue = isTaskOverdue(task);
 
@@ -74,7 +73,8 @@ export function TaskRow({
   );
 }
 
-function createStyles(colors: AppColors) {
+function createStyles(colors: AppColors, decorations: ThemeDecorations) {
+  const env = decorations.environment;
   return StyleSheet.create({
   row: {
     flexDirection: 'row',
@@ -83,9 +83,12 @@ function createStyles(colors: AppColors) {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    borderRadius: decorations.cardRadius,
+    borderWidth: env === 'traditional' ? 1 : StyleSheet.hairlineWidth,
+    borderColor: env === 'traditional' ? colors.primaryMuted : colors.border,
+    borderLeftWidth: env === 'modern' ? StyleSheet.hairlineWidth : 3,
+    borderLeftColor:
+      env === 'traditional' ? colors.success : env === 'fusion' ? colors.accent : colors.border,
   },
   pressed: {
     opacity: 0.9,
@@ -93,9 +96,9 @@ function createStyles(colors: AppColors) {
   check: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: env === 'traditional' ? 7 : 14,
     borderWidth: 1.5,
-    borderColor: colors.borderStrong,
+    borderColor: env === 'fusion' ? colors.primary : colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },

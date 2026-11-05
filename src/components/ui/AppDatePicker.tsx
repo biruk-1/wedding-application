@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { SheetOrnament } from '@/components/theme/ornaments';
 import { isoDateFromDate, parseIsoDate } from '@/lib/datetime/localDate';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
 import { useColors } from '@/theme/WeddingThemeContext';
@@ -122,6 +123,7 @@ export function AppDatePicker({
         <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
           <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
           <View style={styles.sheet}>
+            <SheetOrnament />
             <View style={styles.sheetHeader}>
               <Pressable onPress={() => setOpen(false)} hitSlop={12}>
                 <Text style={styles.sheetAction}>Cancel</Text>
@@ -210,6 +212,7 @@ function createStyles(colors: AppColors) {
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     paddingBottom: spacing.xl,
+    overflow: 'hidden',
   },
   sheetHeader: {
     flexDirection: 'row',

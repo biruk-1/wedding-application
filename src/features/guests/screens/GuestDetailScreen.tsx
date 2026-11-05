@@ -153,13 +153,34 @@ export function GuestDetailScreen() {
           {guest.group ? <Badge label={guest.group.name} tone="primary" /> : null}
           {guest.plus_one_allowed ? <Badge label="Plus one allowed" tone="info" /> : null}
         </View>
-        <Detail label="Phone" value={guest.phone ?? 'Not set'} />
-        <Detail label="Email" value={guest.email ?? 'Not set'} />
+        {guest.contacts_visible !== false ? (
+          <>
+            <Detail label="Phone" value={guest.phone ?? 'Not set'} />
+            <Detail label="Email" value={guest.email ?? 'Not set'} />
+            {guest.dietary_notes ? <Detail label="Dietary notes" value={guest.dietary_notes} /> : null}
+            {guest.notes ? <Detail label="Notes" value={guest.notes} /> : null}
+          </>
+        ) : (
+          <AppText variant="caption" color="textMuted" style={styles.contactHidden}>
+            Contact details are hidden for your role.
+          </AppText>
+        )}
         <Detail label="Side" value={sideLabel(guest.side)} />
         <Detail label="Guest type" value={guestTypeLabel(guest.guest_type)} />
-        {guest.dietary_notes ? <Detail label="Dietary notes" value={guest.dietary_notes} /> : null}
-        {guest.notes ? <Detail label="Notes" value={guest.notes} /> : null}
-        <Detail label="Added" value={formatWeddingDateLabel(guest.created_at.slice(0, 10)) ?? 'Unknown'} />
+        <Detail
+          label="Added"
+          value={
+            guest.created_by_name
+              ? `${guest.created_by_name} · ${formatWeddingDateLabel(guest.created_at.slice(0, 10)) ?? 'Unknown'}`
+              : formatWeddingDateLabel(guest.created_at.slice(0, 10)) ?? 'Before team sharing'
+          }
+        />
+        {guest.updated_by_name && guest.updated_at ? (
+          <Detail
+            label="Last updated"
+            value={`${guest.updated_by_name} · ${formatWeddingDateLabel(guest.updated_at.slice(0, 10)) ?? 'Unknown'}`}
+          />
+        ) : null}
       </Card>
 
       <AuthFormError message={error} />
@@ -294,6 +315,9 @@ function createStyles(colors: AppColors) {
   },
   detail: {
     gap: spacing.xxs,
+  },
+  contactHidden: {
+    marginTop: spacing.xs,
   },
   actions: {
     gap: spacing.md,

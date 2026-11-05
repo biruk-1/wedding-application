@@ -5,7 +5,6 @@ import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 import { fontFamilies, typography } from '@/theme/typography';
 
-
 export type StepIndicatorProps = {
   steps: string[];
   activeIndex: number;
@@ -21,7 +20,7 @@ export function StepIndicator({ steps, activeIndex }: StepIndicatorProps) {
         const filled = isActive || isComplete;
 
         return (
-          <View key={label} style={styles.step}>
+          <View key={label} style={[styles.step, { zIndex: steps.length - index }]}>
             {index > 0 ? (
               <View
                 style={[

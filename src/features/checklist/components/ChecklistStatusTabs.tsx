@@ -1,10 +1,11 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
-import type { AppColors } from '@/theme/types';
-import { useThemedStyles } from '@/theme/useThemedStyles';
+import type { AppColors, ThemeDecorations } from '@/theme/types';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 
 export type ChecklistTab = 'all' | 'todo' | 'done';
 
@@ -17,7 +18,8 @@ export function ChecklistStatusTabs({
   counts: { all: number; todo: number; done: number };
   onChange: (value: ChecklistTab) => void;
 }) {
-  const styles = useThemedStyles(createStyles);
+  const { colors, decorations } = useWeddingTheme();
+  const styles = useMemo(() => createStyles(colors, decorations), [colors, decorations]);
   const tabs: { id: ChecklistTab; label: string; count: number }[] = [
     { id: 'all', label: 'All', count: counts.all },
     { id: 'todo', label: 'To Do', count: counts.todo },
@@ -48,7 +50,9 @@ export function ChecklistStatusTabs({
   );
 }
 
-function createStyles(colors: AppColors) {
+function createStyles(colors: AppColors, decorations: ThemeDecorations) {
+  const env = decorations.environment;
+  const active = env === 'traditional' ? colors.success : env === 'fusion' ? colors.accent : colors.primary;
   return StyleSheet.create({
   row: {
     flexDirection: 'row',
@@ -61,11 +65,14 @@ function createStyles(colors: AppColors) {
     justifyContent: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    borderRadius: radii.lg,
-    backgroundColor: colors.surfaceMuted,
+    borderRadius: env === 'traditional' ? radii.sm : radii.lg,
+    backgroundColor: env === 'modern' ? colors.surfaceMuted : colors.surfaceElevated,
+    borderWidth: env === 'modern' ? 0 : 1,
+    borderColor: env === 'traditional' ? colors.primaryMuted : colors.border,
   },
   tabActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: active,
+    borderColor: env === 'traditional' ? colors.primary : active,
   },
   label: {
     color: colors.textMuted,

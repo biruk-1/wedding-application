@@ -23,7 +23,14 @@ export type InvitationStatus = 'draft' | 'ready' | 'sent' | 'delivered' | 'opene
 export type DeliveryChannel = 'link' | 'sms' | 'whatsapp' | 'email' | 'print' | 'other';
 
 /** Guest row plus the embedded group name used by the list. */
-export type GuestListItem = Guest & { group: Pick<GuestGroup, 'id' | 'name'> | null };
+export type GuestListItem = Guest & {
+  group: Pick<GuestGroup, 'id' | 'name'> | null;
+  /** Present when loaded via get/list wedding guest RPCs. */
+  created_by_name?: string | null;
+  updated_by_name?: string | null;
+  /** False when contact columns were nulled for the caller (D7). */
+  contacts_visible?: boolean;
+};
 
 /** Minimal guest columns for pickers, stats and seating (no PII beyond the name). */
 export type GuestSummary = Pick<Guest, 'id' | 'full_name' | 'group_id' | 'side' | 'plus_one_allowed'>;

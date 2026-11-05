@@ -102,6 +102,58 @@ export async function getWeddingBudget(
   };
 }
 
+export type BudgetSummary = {
+  wedding_id: string;
+  currency_code: string;
+  total_budget: number;
+  total_paid: number;
+  categories: {
+    category_id: string;
+    category_slug: string;
+    category_name: string;
+    allocated: number;
+    estimated_expenses: number;
+    committed_expenses: number;
+  }[];
+};
+
+/** Aggregates for callers with `budget.view` who may not see expense lines. */
+export async function getBudgetSummary(
+  weddingId: string,
+): Promise<BudgetResult<BudgetSummary>> {
+  const { data, error } = await supabase.rpc('get_budget_summary', {
+    p_wedding_id: weddingId,
+  });
+  if (error) return fail(error);
+  if (!data || typeof data !== 'object') return notFound('Budget summary unavailable.');
+  const row = data as Record<string, unknown>;
+  const categoriesRaw = Array.isArray(row.categories) ? row.categories : [];
+  return {
+    ok: true,
+    data: {
+      wedding_id: typeof row.wedding_id === 'string' ? row.wedding_id : weddingId,
+      currency_code: typeof row.currency_code === 'string' ? row.currency_code : 'ETB',
+      total_budget: Number(row.total_budget ?? 0),
+      total_paid: Number(row.total_paid ?? 0),
+      categories: categoriesRaw.flatMap((item) => {
+        if (!item || typeof item !== 'object') return [];
+        const cat = item as Record<string, unknown>;
+        if (typeof cat.category_id !== 'string') return [];
+        return [
+          {
+            category_id: cat.category_id,
+            category_slug: typeof cat.category_slug === 'string' ? cat.category_slug : '',
+            category_name: typeof cat.category_name === 'string' ? cat.category_name : '',
+            allocated: Number(cat.allocated ?? 0),
+            estimated_expenses: Number(cat.estimated_expenses ?? 0),
+            committed_expenses: Number(cat.committed_expenses ?? 0),
+          },
+        ];
+      }),
+    },
+  };
+}
+
 export async function updateWeddingBudget(
   weddingId: string,
   input: WeddingBudgetUpdate,

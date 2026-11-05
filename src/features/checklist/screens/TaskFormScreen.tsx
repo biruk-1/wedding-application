@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { FormSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppDatePicker } from '@/components/ui/AppDatePicker';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
@@ -135,7 +135,7 @@ export function TaskFormScreen({ mode }: { mode: 'create' | 'edit' }) {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <FormSkeleton fields={5} />
       </Screen>
     );
   }

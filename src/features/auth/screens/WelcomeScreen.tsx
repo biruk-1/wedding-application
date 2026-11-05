@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import {
   Image,
   Pressable,
@@ -12,13 +13,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { WELCOME_PORTRAIT } from '@/theme/palettes';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
 import { typography } from '@/theme/typography';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { useThemedStyles } from '@/theme/useThemedStyles';
-
-const HERO = require('../../../../assets/images/welcome-hero.jpg');
 
 /**
  * Welcome composition from the approved Kiburan reference:
@@ -35,16 +35,17 @@ export function WelcomeScreen() {
     <View
       style={[styles.root, { width, minHeight: height }]}
       accessibilityLabel="Kiburan welcome">
+      <StatusBar style="light" />
       <Image
-        source={HERO}
+        source={WELCOME_PORTRAIT}
         style={[StyleSheet.absoluteFill, { width, height }]}
         resizeMode="cover"
         accessibilityIgnoresInvertColors
       />
       <LinearGradient
         pointerEvents="none"
-        colors={['rgba(20,24,20,0.42)', 'rgba(20,24,20,0.18)', 'rgba(20,24,20,0.78)']}
-        locations={[0, 0.38, 1]}
+        colors={['rgba(20,24,20,0.62)', 'rgba(20,24,20,0.12)', 'rgba(20,24,20,0.82)']}
+        locations={[0, 0.42, 1]}
         style={StyleSheet.absoluteFill}
       />
 

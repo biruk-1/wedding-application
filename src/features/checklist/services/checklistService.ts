@@ -249,7 +249,7 @@ export async function listWeddingMembersForAssign(weddingId: string): Promise<
 > {
   const { data, error } = await supabase
     .from('wedding_members')
-    .select('user_id, role, profile:profiles ( display_name )')
+    .select('user_id, role, profile:profiles!wedding_members_user_id_fkey ( display_name )')
     .eq('wedding_id', weddingId);
 
   if (error) return fail(error);

@@ -6,11 +6,12 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
+import { ThemedBackground } from '@/components/theme/ThemedBackground';
 import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { VendorProfileSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import {
   canWriteWedding,
   getVendorProfile,
@@ -132,7 +133,7 @@ export function VendorProfileScreen() {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <VendorProfileSkeleton />
       </Screen>
     );
   }
@@ -179,6 +180,7 @@ export function VendorProfileScreen() {
         <Image source={{ uri: cover }} style={styles.hero} contentFit="cover" transition={200} />
       ) : (
         <View style={[styles.hero, styles.heroFallback]}>
+          <ThemedBackground compact />
           <AppText color="textMuted">No cover image</AppText>
         </View>
       )}
@@ -190,7 +192,7 @@ export function VendorProfileScreen() {
           </AppText>
         ) : null}
 
-        <Card style={styles.section}>
+        <Card style={styles.section} ornament>
           <AppText variant="label">Overview</AppText>
           {location ? (
             <AppText variant="caption" color="textMuted">
@@ -356,6 +358,7 @@ function createStyles(colors: AppColors) {
   heroFallback: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   stack: {
     gap: spacing.lg,
@@ -371,7 +374,7 @@ function createStyles(colors: AppColors) {
     gap: spacing.xs,
     paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    borderTopColor: colors.primaryMuted,
   },
   packageCard: {
     gap: spacing.xs,
@@ -379,6 +382,8 @@ function createStyles(colors: AppColors) {
     padding: spacing.md,
     backgroundColor: colors.surfaceMuted,
     borderRadius: radii.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.ornament,
   },
   galleryTitle: {
     paddingHorizontal: spacing.lg,

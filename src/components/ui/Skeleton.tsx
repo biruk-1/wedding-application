@@ -7,8 +7,9 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
-import { useColors } from '@/theme/WeddingThemeContext';
+import { useColors, useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 
@@ -26,9 +27,15 @@ export function Skeleton({
   style,
 }: SkeletonProps) {
   const colors = useColors();
-  const opacity = useMemo(() => new Animated.Value(0.45), []);
+  const reduceMotion = useReducedMotion();
+  const opacity = useMemo(() => new Animated.Value(0.7), []);
 
   useEffect(() => {
+    if (reduceMotion) {
+      opacity.setValue(0.7);
+      return;
+    }
+    opacity.setValue(0.45);
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
@@ -47,7 +54,7 @@ export function Skeleton({
     );
     animation.start();
     return () => animation.stop();
-  }, [opacity]);
+  }, [opacity, reduceMotion]);
 
   return (
     <Animated.View
@@ -78,14 +85,17 @@ export function SkeletonCard({
   style?: StyleProp<ViewStyle>;
   padded?: boolean;
 }) {
-  const colors = useColors();
+  const { colors, decorations } = useWeddingTheme();
+  const traditional = decorations.environment === 'traditional';
   return (
     <View
       style={[
         styles.card,
         {
           backgroundColor: colors.surfaceElevated,
-          borderColor: colors.border,
+          borderColor: traditional ? colors.primaryMuted : colors.border,
+          borderWidth: traditional ? 1 : StyleSheet.hairlineWidth,
+          borderRadius: decorations.cardRadius,
         },
         padded && styles.cardPadded,
         style,

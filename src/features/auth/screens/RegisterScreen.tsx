@@ -1,4 +1,4 @@
-import { Link, useRouter, type Href } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -16,10 +16,12 @@ import {
   fieldErrorsFromZod,
   registerSchema,
 } from '@/features/auth/validation/authSchemas';
+import { loadPendingTeamInvite } from '@/features/team/services/pendingTeamInvite';
 import { spacing } from '@/theme/spacing';
 
 export function RegisterScreen() {
   const router = useRouter();
+  const { emailHint } = useLocalSearchParams<{ emailHint?: string }>();
   const { signUp } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,6 +31,7 @@ export function RegisterScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = typeof emailHint === 'string' ? emailHint : null;
 
   async function onSubmit() {
     setFormError(null);
@@ -53,11 +56,12 @@ export function RegisterScreen() {
     }
     if (result.data.needsEmailConfirmation) {
       setInfoMessage(
-        'Check your email to confirm your account before signing in. Your profile will be ready after confirmation.',
+        'Check your email to confirm your account before signing in. Your pending invite will resume after confirmation.',
       );
       return;
     }
-    router.replace('/(app)' as Href);
+    const pending = await loadPendingTeamInvite();
+    router.replace((pending ? `/join/${pending}` : '/(app)') as Href);
   }
 
 
@@ -66,6 +70,11 @@ export function RegisterScreen() {
       <StatusBar style="dark" />
       <Header title="Create account" subtitle="Join Kiburan to plan together" showBack />
       <View style={styles.form}>
+        {hint ? (
+          <AppText variant="caption" color="textMuted">
+            Register with the invited address {hint}
+          </AppText>
+        ) : null}
         <TextField
           label="Full name"
           placeholder="Your name"

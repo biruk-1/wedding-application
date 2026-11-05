@@ -1,14 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { BrandMark } from '@/components/brand/BrandMark';
 import { AppText } from '@/components/ui/AppText';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
 import { fontFamilies } from '@/theme/typography';
-import { useColors } from '@/theme/WeddingThemeContext';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { useThemedStyles } from '@/theme/useThemedStyles';
-
-const AVATAR = require('../../../../assets/images/welcome-hero.jpg');
 
 export function DashboardHomeHeader({
   onSettings,
@@ -17,13 +16,21 @@ export function DashboardHomeHeader({
   onSettings: () => void;
   onNotifications?: () => void;
 }) {
-  const colors = useColors();
+  const { colors, decorations } = useWeddingTheme();
   const styles = useThemedStyles(createStyles);
 
   return (
     <View style={styles.row}>
       <View style={styles.brand}>
-        <Image source={AVATAR} style={styles.avatar} accessibilityIgnoresInvertColors />
+        <View
+          style={[
+            styles.avatar,
+            decorations.environment === 'traditional' && styles.avatarTraditional,
+            decorations.environment === 'fusion' && styles.avatarFusion,
+          ]}
+          accessibilityElementsHidden>
+          <BrandMark size={24} color={colors.primary} />
+        </View>
         <AppText style={styles.wordmark} accessibilityRole="header">
           Kiburan
         </AppText>
@@ -69,7 +76,21 @@ function createStyles(colors: AppColors) {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: colors.primaryMuted,
+  },
+  avatarTraditional: {
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    backgroundColor: colors.successMuted,
+  },
+  avatarFusion: {
+    borderWidth: 1.5,
+    borderColor: colors.accent,
   },
   wordmark: {
     fontFamily: fontFamilies.displayBold,

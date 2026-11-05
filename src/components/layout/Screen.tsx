@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
-import { ThemeBackdrop } from '@/components/theme/ThemeBackdrop';
+import { ThemedBackground } from '@/components/theme/ThemedBackground';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
 
@@ -63,7 +63,7 @@ export function Screen({
 
   return (
     <SafeAreaView edges={edges} style={[styles.flex, { backgroundColor: surface }, style]}>
-      {themedBackdrop ? <ThemeBackdrop /> : null}
+      {themedBackdrop ? <ThemedBackground /> : null}
       {content}
     </SafeAreaView>
   );

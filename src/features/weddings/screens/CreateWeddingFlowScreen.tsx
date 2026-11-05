@@ -6,6 +6,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
+import { ThemePreviewCard } from '@/components/theme/ThemePreviewCard';
 import { AppDatePicker } from '@/components/ui/AppDatePicker';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
@@ -33,7 +34,6 @@ import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
-import { fontFamilies } from '@/theme/typography';
 import { useColors, WeddingThemeProvider } from '@/theme/WeddingThemeContext';
 import { useThemedStyles } from '@/theme/useThemedStyles';
 
@@ -42,22 +42,10 @@ const STEPS = ['Event', 'Details', 'Aesthetic', 'Budget', 'Review'];
 
 type WeddingStyle = 'traditional' | 'modern' | 'blend';
 
-const STYLE_OPTIONS: { id: WeddingStyle; label: string; image: number }[] = [
-  {
-    id: 'traditional',
-    label: 'Traditional',
-    image: require('../../../../assets/images/style-traditional.jpg'),
-  },
-  {
-    id: 'modern',
-    label: 'Modern',
-    image: require('../../../../assets/images/style-modern.jpg'),
-  },
-  {
-    id: 'blend',
-    label: 'Fusion',
-    image: require('../../../../assets/images/style-blend.jpg'),
-  },
+const STYLE_OPTIONS: { id: WeddingStyle; label: string }[] = [
+  { id: 'traditional', label: 'Traditional' },
+  { id: 'modern', label: 'Modern' },
+  { id: 'blend', label: 'Fusion' },
 ];
 
 export function CreateWeddingFlowScreen() {
@@ -385,25 +373,15 @@ function CreateWeddingFlowContent({
           <AppText variant="caption" color="textMuted">
             Choose the visual direction for your celebration. You can change it later.
           </AppText>
-          <View style={styles.styleRow}>
-            {STYLE_OPTIONS.map((option) => {
-              const selected = style === option.id;
-              return (
-                <Pressable
-                  key={option.id}
-                  onPress={() => setStyle(option.id)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: selected }}
-                  style={[styles.styleCard, selected && styles.styleCardSelected]}>
-                  <Image source={option.image} style={styles.styleImage} resizeMode="cover" />
-                  <AppText
-                    variant="caption"
-                    style={[styles.styleLabel, selected && styles.styleLabelSelected]}>
-                    {option.label}
-                  </AppText>
-                </Pressable>
-              );
-            })}
+          <View style={styles.styleList} accessibilityRole="radiogroup">
+            {STYLE_OPTIONS.map((option) => (
+              <ThemePreviewCard
+                key={option.id}
+                styleId={option.id}
+                selected={style === option.id}
+                onPress={() => setStyle(option.id)}
+              />
+            ))}
           </View>
           <Button label="Next" onPress={onNextFromStyle} disabled={submitting} />
         </View>
@@ -558,6 +536,9 @@ function createStyles(colors: AppColors) {
     overflow: 'hidden',
     backgroundColor: colors.surfaceElevated,
   },
+  styleCardSelected: {
+    borderColor: colors.primary,
+  },
   celebrationImage: {
     width: '100%',
     height: 76,
@@ -580,34 +561,8 @@ function createStyles(colors: AppColors) {
     alignItems: 'center',
     gap: spacing.xs,
   },
-  styleRow: {
-    flexDirection: 'row',
+  styleList: {
     gap: spacing.md,
-  },
-  styleCard: {
-    flex: 1,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    overflow: 'hidden',
-    backgroundColor: colors.surfaceElevated,
-  },
-  styleCardSelected: {
-    borderColor: colors.primary,
-  },
-  styleImage: {
-    width: '100%',
-    height: 72,
-    backgroundColor: colors.surfaceMuted,
-  },
-  styleLabel: {
-    textAlign: 'center',
-    paddingVertical: spacing.sm,
-    color: colors.textMuted,
-  },
-  styleLabelSelected: {
-    color: colors.text,
-    fontFamily: fontFamilies.bodyMedium,
   },
   budgetSummary: {
     gap: spacing.sm,

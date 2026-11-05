@@ -19,6 +19,18 @@ export const queryKeys = {
     ['u', userId, 'wedding', weddingId, 'task-comments', taskId] as const,
   weddingMembers: (userId: string, weddingId: string) =>
     ['u', userId, 'wedding', weddingId, 'members'] as const,
+  /** Effective access from `get_my_wedding_access` (display only). */
+  myAccess: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'my-access'] as const,
+  /** Planning Team roster from `list_team_members`. */
+  teamMembers: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'team-members'] as const,
+  teamInvites: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'team-invites'] as const,
+  /**
+   * Public Planning Team invite preview. Not under `['u', userId]` — join works signed out.
+   */
+  publicTeamInvite: (token: string) => ['team-invite', token] as const,
   weddingVendor: (userId: string, weddingId: string, vendorId: string) =>
     ['u', userId, 'wedding', weddingId, 'saved-vendor', vendorId] as const,
   weddingFiles: (userId: string, weddingId: string) =>
@@ -34,6 +46,8 @@ export const queryKeys = {
     ['u', userId, 'wedding', weddingId, 'guests', 'list', filters] as const,
   guestSummaries: (userId: string, weddingId: string) =>
     ['u', userId, 'wedding', weddingId, 'guests', 'summaries'] as const,
+  guestStats: (userId: string, weddingId: string, eventId: string | null) =>
+    ['u', userId, 'wedding', weddingId, 'guests', 'stats', eventId] as const,
   guest: (userId: string, weddingId: string, guestId: string) =>
     ['u', userId, 'wedding', weddingId, 'guests', 'detail', guestId] as const,
   invitationDesigns: (userId: string, weddingId: string) =>

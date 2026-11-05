@@ -7,7 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/layout/Screen';
 import { WeddingTabBar, weddingTabBarInset } from '@/components/navigation/WeddingTabBar';
 import { MarketplaceSkeleton } from '@/components/skeletons/ScreenSkeletons';
+import { ThemeDiscoverBanner } from '@/components/theme/ThemeDiscoverBanner';
 import { AppText } from '@/components/ui/AppText';
+import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SearchField } from '@/components/ui/SearchField';
@@ -45,14 +47,21 @@ export function MarketplaceScreen() {
   const listHeader = useMemo(
     () => (
       <View style={styles.headerBlock}>
-        <AppText variant="title" color="heading">
-          Marketplace
-        </AppText>
+        <SectionHeading title="Marketplace" />
         <AppText variant="caption" color="textMuted" style={styles.subtitle}>
           {wedding.data?.title
             ? `Vendors for ${wedding.data.title}`
             : 'Discover wedding vendors'}
         </AppText>
+        <ThemeDiscoverBanner
+          title="Discover vendors"
+          subtitle={
+            marketplace.personalization?.context ??
+            'Photography, venues and planners matched to your celebration'
+          }
+          ctaLabel="Explore all"
+          onPress={() => marketplace.setFilters({ ...marketplace.filters, categoryId: null })}
+        />
         {marketplace.personalization ? (
           <View style={styles.recommendations}>
             <AppText variant="caption" color="textMuted">
@@ -144,19 +153,17 @@ export function MarketplaceScreen() {
   const empty =
     marketplace.vendors.length === 0 && !marketplace.error ? (
       <EmptyState
+        icon="storefront-outline"
         title="No vendors published yet"
         description="Published, verified vendors will appear here once listings go live."
       />
     ) : (
-      <View style={styles.empty}>
-        <AppText variant="subtitle" style={styles.center}>
-          No matching vendors
-        </AppText>
-        <AppText variant="body" color="textMuted" style={styles.center}>
-          Try another category, city, or price range.
-        </AppText>
-        <Button label="Reset filters" variant="secondary" onPress={marketplace.resetFilters} />
-      </View>
+      <EmptyState
+        icon="search-outline"
+        title="No matching vendors"
+        description="Try another category, city, or price range."
+        action={<Button label="Reset filters" variant="secondary" onPress={marketplace.resetFilters} />}
+      />
     );
 
   return (
@@ -236,13 +243,6 @@ const styles = StyleSheet.create({
   },
   loadingTitle: {
     marginBottom: spacing.lg,
-  },
-  empty: {
-    gap: spacing.md,
-    paddingVertical: spacing['2xl'],
-  },
-  center: {
-    textAlign: 'center',
   },
   separator: {
     height: spacing.md,

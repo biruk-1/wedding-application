@@ -18,8 +18,8 @@ function fail(error: { message?: string; code?: string } | Error | null): Weddin
 export async function createWedding(input: CreateWeddingInput): Promise<WeddingResult<Wedding>> {
   const { data, error } = await supabase.rpc('create_wedding', {
     p_title: input.title.trim(),
-    p_partner_one_name: input.partnerOneName?.trim() || null,
-    p_partner_two_name: input.partnerTwoName?.trim() || null,
+    p_partner_one_name: input.partnerOneName?.trim() || undefined,
+    p_partner_two_name: input.partnerTwoName?.trim() || undefined,
     p_wedding_date: input.weddingDate ?? undefined,
     p_city: input.city?.trim() || undefined,
     p_country_code: input.countryCode ?? 'ET',
@@ -108,28 +108,39 @@ export type UpdateWeddingInput = {
   title?: string;
   city?: string | null;
   weddingDate?: string | null;
+  coverImageUrl?: string | null;
 };
+
+export const WEDDING_COVERS_BUCKET = 'wedding-covers';
+const MAX_COVER_BYTES = 5 * 1024 * 1024;
 
 export async function updateWedding(
   weddingId: string,
   input: UpdateWeddingInput,
 ): Promise<WeddingResult<Wedding>> {
-  const patch: Database['public']['Tables']['weddings']['Update'] = {};
-  if (input.style !== undefined) patch.style = input.style;
-  if (input.title !== undefined) patch.title = input.title.trim();
-  if (input.city !== undefined) patch.city = input.city?.trim() || null;
-  if (input.weddingDate !== undefined) patch.wedding_date = input.weddingDate;
+  const args: Database['public']['Functions']['update_wedding_settings']['Args'] = {
+    p_wedding_id: weddingId,
+  };
+  if (input.style !== undefined) args.p_style = input.style ?? undefined;
+  if (input.title !== undefined) args.p_title = input.title.trim();
+  if (input.city !== undefined) args.p_city = input.city?.trim() || '';
+  if (input.weddingDate !== undefined) args.p_wedding_date = input.weddingDate ?? undefined;
+  if (input.coverImageUrl !== undefined) {
+    args.p_cover_image_url = input.coverImageUrl ?? undefined;
+  }
 
-  if (Object.keys(patch).length === 0) {
+  const hasPatch =
+    input.style !== undefined
+    || input.title !== undefined
+    || input.city !== undefined
+    || input.weddingDate !== undefined
+    || input.coverImageUrl !== undefined;
+
+  if (!hasPatch) {
     return getWeddingById(weddingId);
   }
 
-  const { data, error } = await supabase
-    .from('weddings')
-    .update(patch)
-    .eq('id', weddingId)
-    .select('*')
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('update_wedding_settings', args);
 
   if (error) return fail(error);
   if (!data) {
@@ -142,4 +153,44 @@ export async function updateWedding(
     };
   }
   return { ok: true, data };
+}
+
+function mimeToExt(mime: string | null | undefined): 'jpg' | 'png' | 'webp' {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  return 'jpg';
+}
+
+/**
+ * Uploads a cover photo to the public `wedding-covers` bucket.
+ * Path: `{weddingId}/cover.{ext}` — writers only (RLS).
+ */
+export async function uploadWeddingCover(input: {
+  weddingId: string;
+  uri: string;
+  mimeType?: string | null;
+}): Promise<WeddingResult<{ publicUrl: string }>> {
+  const ext = mimeToExt(input.mimeType);
+  const path = `${input.weddingId}/cover.${ext}`;
+
+  const response = await fetch(input.uri);
+  if (!response.ok) {
+    return fail({ code: 'read_failed', message: 'Could not read the selected photo.' });
+  }
+  const blob = await response.blob();
+  if (blob.size > MAX_COVER_BYTES) {
+    return fail({ code: 'too_large', message: 'Choose a photo under 5 MB.' });
+  }
+
+  const { error: uploadError } = await supabase.storage
+    .from(WEDDING_COVERS_BUCKET)
+    .upload(path, blob, {
+      contentType: input.mimeType ?? `image/${ext}`,
+      upsert: true,
+    });
+  if (uploadError) return fail(uploadError);
+
+  const { data } = supabase.storage.from(WEDDING_COVERS_BUCKET).getPublicUrl(path);
+  const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
+  return { ok: true, data: { publicUrl } };
 }

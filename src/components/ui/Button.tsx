@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useColors } from '@/theme/WeddingThemeContext';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
@@ -91,7 +91,7 @@ export function Button({
   style,
   ...rest
 }: ButtonProps) {
-  const colors = useColors();
+  const { colors, decorations } = useWeddingTheme();
   const palette = useMemo(() => variantStyles(colors)[variant], [colors, variant]);
   const isDisabled = disabled || loading;
 
@@ -103,6 +103,7 @@ export function Button({
       style={(state) => {
         const composed: StyleProp<ViewStyle> = [
           styles.base,
+          { borderRadius: decorations.buttonRadius },
           size === 'compact' && styles.compact,
           fullWidth && styles.fullWidth,
           palette.idle,

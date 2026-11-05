@@ -1,8 +1,13 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWeddingAccess } from '@/features/team/queries';
 import { membershipsQuery } from '@/features/weddings/membershipsQuery';
-import { getWeddingById } from '@/features/weddings/services/weddingService';
+import {
+  getWeddingById,
+  updateWedding,
+  uploadWeddingCover,
+} from '@/features/weddings/services/weddingService';
 import type { WeddingMembership } from '@/features/weddings/types';
 import { unwrap } from '@/lib/query/queryError';
 import { queryKeys, staleTimes } from '@/lib/query/queryKeys';
@@ -51,17 +56,45 @@ export function useWedding(weddingId: string | undefined) {
 }
 
 /**
- * The caller's role in a wedding, derived from the shared memberships query (no extra request).
- * UI uses `canWrite` only to hide controls; RLS (`can_write_wedding`) enforces it server-side.
+ * Caller's role / write flag for a wedding.
+ * Shim over `useWeddingAccess` so screens can migrate gradually. `canWrite` still follows the
+ * legacy role rule (not viewer) until Milestone 5 backfills permissions and switches RLS.
+ * UI hides controls only; RLS / RPCs enforce access.
  */
 export function useWeddingRole(weddingId: string | undefined) {
+  const access = useWeddingAccess(weddingId);
+  return {
+    role: access.role,
+    canWrite: access.canWrite,
+    isLoading: access.isLoading,
+  };
+}
+
+/** Pick → upload → save `weddings.cover_image_url` for the dashboard hero. */
+export function useUploadWeddingCover(weddingId: string | undefined) {
   const userId = useUserId();
-  const query = useQuery({
-    ...membershipsQuery(userId ?? ''),
-    enabled: Boolean(userId && weddingId),
-    select: (memberships) =>
-      memberships.find((membership) => membership.wedding_id === weddingId)?.role ?? null,
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { uri: string; mimeType?: string | null }) => {
+      if (!userId || !weddingId) throw new Error('Sign in to update the cover photo.');
+      const uploaded = unwrap(await uploadWeddingCover({ weddingId, ...input }));
+      return unwrap(
+        await updateWedding(weddingId, { coverImageUrl: uploaded.publicUrl }),
+      );
+    },
+    onSuccess: (wedding) => {
+      if (!userId || !weddingId) return;
+      queryClient.setQueryData(queryKeys.wedding(userId, weddingId), wedding);
+      queryClient.setQueryData<WeddingMembership[]>(
+        queryKeys.memberships(userId),
+        (prev) =>
+          prev?.map((membership) =>
+            membership.wedding_id === weddingId
+              ? { ...membership, wedding }
+              : membership,
+          ) ?? prev,
+      );
+    },
   });
-  const role = query.data ?? null;
-  return { role, canWrite: Boolean(role && role !== 'viewer'), isLoading: query.isPending };
 }

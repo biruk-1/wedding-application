@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { WeddingListSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { normalizeCelebrationKind } from '@/features/weddings/celebrationCopy';
 import { useMyWeddings } from '@/features/weddings/hooks/useMyWeddings';
 import { OnboardingWelcomeScreen } from '@/features/weddings/screens/OnboardingWelcomeScreen';
@@ -32,7 +32,7 @@ export function AppHomeHubScreen() {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <WeddingListSkeleton />
       </Screen>
     );
   }

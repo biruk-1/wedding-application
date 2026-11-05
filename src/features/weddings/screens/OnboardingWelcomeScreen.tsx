@@ -11,7 +11,7 @@ import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
 import { useThemedStyles } from '@/theme/useThemedStyles';
 
-const HERO = require('../../../../assets/images/style-blend.jpg');
+const HERO = require('../../../../assets/themes/traditional/wedding-images/hero.jpg');
 
 export function OnboardingWelcomeScreen() {
   const router = useRouter();

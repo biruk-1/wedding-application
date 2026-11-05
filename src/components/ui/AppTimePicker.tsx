@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { SheetOrnament } from '@/components/theme/ornaments';
 import { parseTimeHm, timeHmFromDate } from '@/lib/datetime/localDate';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
@@ -123,6 +124,7 @@ export function AppTimePicker({
         <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
           <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
           <View style={styles.sheet}>
+            <SheetOrnament />
             <View style={styles.sheetHeader}>
               <Pressable onPress={() => setOpen(false)} hitSlop={12}>
                 <Text style={styles.sheetAction}>Cancel</Text>
@@ -210,6 +212,7 @@ function createStyles(colors: AppColors) {
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     paddingBottom: spacing.xl,
+    overflow: 'hidden',
   },
   sheetHeader: {
     flexDirection: 'row',

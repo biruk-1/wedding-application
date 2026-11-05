@@ -18,12 +18,14 @@ import { WeddingTabBar, weddingTabBarInset } from '@/components/navigation/Weddi
 import { ChecklistSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { CategoryCard } from '@/features/checklist/components/CategoryCard';
 import {
   ChecklistStatusTabs,
   type ChecklistTab,
 } from '@/features/checklist/components/ChecklistStatusTabs';
+import { ProgressHeader } from '@/features/checklist/components/ProgressHeader';
 import { TaskRow } from '@/features/checklist/components/TaskRow';
 import {
   useInitializeTemplates,
@@ -38,7 +40,7 @@ import {
   countByChecklistTab,
   type CategoryProgressRow,
 } from '@/features/checklist/utils/categoryProgress';
-import { filterTasks } from '@/features/checklist/utils/taskHelpers';
+import { computeChecklistProgress, filterTasks } from '@/features/checklist/utils/taskHelpers';
 import { useWedding, useWeddingRole } from '@/features/weddings/queries';
 import { errorMessage } from '@/lib/query/queryError';
 import { useColors } from '@/theme/WeddingThemeContext';
@@ -75,6 +77,7 @@ export function ChecklistScreen() {
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const templateCount = templateCountQuery.data ?? 0;
   const counts = useMemo(() => countByChecklistTab(tasks), [tasks]);
+  const progress = useMemo(() => computeChecklistProgress(tasks), [tasks]);
   const categoryRows = useMemo(
     () => buildCategoryProgress(categories, tasks, tab),
     [categories, tasks, tab],
@@ -278,6 +281,9 @@ export function ChecklistScreen() {
         error={tasksQuery.isRefetchError ? tasksQuery.error : null}
         onRetry={() => void tasksQuery.refetch()}
       />
+      {!selectedCategoryId ? (
+        <ProgressHeader progress={progress} label="Overall progress" variant="ring" />
+      ) : null}
       <ChecklistStatusTabs value={tab} counts={counts} onChange={setTab} />
       {actionError ? (
         <AppText color="danger" variant="caption" style={[styles.center, styles.actionError]}>
@@ -289,31 +295,31 @@ export function ChecklistScreen() {
 
   const emptyTasks =
     tasks.length === 0 ? (
-      <View style={styles.empty}>
-        <AppText variant="subtitle" style={styles.center}>
-          No tasks yet
-        </AppText>
-        <AppText variant="body" color="textMuted" style={styles.center}>
-          Create your first task or load the starter checklist
-          {templateCount > 0 ? ` (${templateCount} templates)` : ''}.
-        </AppText>
-        {canWrite ? (
-          <>
-            {templateCount > 0 ? (
+      <EmptyState
+        icon="checkbox-outline"
+        title="No tasks yet"
+        description={`Create your first task or load the starter checklist${
+          templateCount > 0 ? ` (${templateCount} templates)` : ''
+        }.`}
+        action={
+          canWrite ? (
+            <View style={styles.emptyActions}>
+              {templateCount > 0 ? (
+                <Button
+                  label="Use starter checklist"
+                  loading={initialize.isPending}
+                  onPress={onInitializeTemplates}
+                />
+              ) : null}
               <Button
-                label="Use starter checklist"
-                loading={initialize.isPending}
-                onPress={onInitializeTemplates}
+                label="Create task"
+                variant="secondary"
+                onPress={() => router.push(`/(app)/weddings/${weddingId}/checklist/new` as Href)}
               />
-            ) : null}
-            <Button
-              label="Create task"
-              variant="secondary"
-              onPress={() => router.push(`/(app)/weddings/${weddingId}/checklist/new` as Href)}
-            />
-          </>
-        ) : null}
-      </View>
+            </View>
+          ) : undefined
+        }
+      />
     ) : (
       <AppText color="textMuted" style={[styles.center, styles.noMatch]}>
         Nothing in this view yet.
@@ -405,9 +411,8 @@ const styles = StyleSheet.create({
   actionError: {
     marginBottom: spacing.md,
   },
-  empty: {
-    gap: spacing.lg,
-    paddingVertical: spacing['2xl'],
+  emptyActions: {
+    gap: spacing.md,
   },
   noMatch: {
     paddingVertical: spacing.xl,

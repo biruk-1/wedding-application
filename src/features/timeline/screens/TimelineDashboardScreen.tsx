@@ -11,6 +11,7 @@ import { TimelineSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { CalendarMonth } from '@/features/timeline/components/CalendarMonth';
 import { EventRow } from '@/features/timeline/components/EventRow';
@@ -166,12 +167,11 @@ export function TimelineDashboardScreen() {
               ))}
             </View>
             {listEvents.length === 0 ? (
-              <Card style={styles.empty}>
-                <AppText variant="subtitle">No events yet</AppText>
-                <AppText variant="body" color="textMuted">
-                  Add ceremonies, rehearsals, and receptions to build your wedding timeline.
-                </AppText>
-              </Card>
+              <EmptyState
+                icon="calendar-outline"
+                title="No events yet"
+                description="Add ceremonies, rehearsals, and receptions to build your wedding timeline."
+              />
             ) : (
               <View style={styles.list}>
                 {listEvents.map((event) => (
@@ -293,9 +293,6 @@ function createStyles(colors: AppColors) {
   },
   list: {
     gap: spacing.md,
-  },
-  empty: {
-    gap: spacing.sm,
   },
   calendarCard: {
     gap: spacing.lg,

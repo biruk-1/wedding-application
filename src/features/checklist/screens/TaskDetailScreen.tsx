@@ -9,7 +9,7 @@ import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { TaskDetailSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
 import {
@@ -22,8 +22,8 @@ import {
 import type { TaskWithRelations } from '@/features/checklist/types';
 import { commentSchema } from '@/features/checklist/validation/taskSchemas';
 import { isTaskOverdue, statusLabel } from '@/features/checklist/utils/taskHelpers';
+import { useWeddingRole } from '@/features/weddings/queries';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
-import { supabase } from '@/lib/supabase';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
 import { useColors } from '@/theme/WeddingThemeContext';
@@ -40,10 +40,10 @@ export function TaskDetailScreen() {
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const { weddingId, taskId } = useLocalSearchParams<{ weddingId: string; taskId: string }>();
+  const { canWrite, isLoading: roleLoading } = useWeddingRole(weddingId);
   const [task, setTask] = useState<TaskWithRelations | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [commentBody, setCommentBody] = useState('');
-  const [canWrite, setCanWrite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -55,15 +55,9 @@ export function TaskDetailScreen() {
     let cancelled = false;
 
     void (async () => {
-      const [taskResult, commentsResult, membership] = await Promise.all([
+      const [taskResult, commentsResult] = await Promise.all([
         getWeddingTask(taskId),
         listTaskComments(taskId),
-        supabase
-          .from('wedding_members')
-          .select('role')
-          .eq('wedding_id', weddingId)
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
-          .maybeSingle(),
       ]);
 
       if (cancelled) return;
@@ -85,8 +79,6 @@ export function TaskDetailScreen() {
           })),
         );
       }
-      const role = membership.data?.role;
-      setCanWrite(Boolean(role && role !== 'viewer'));
       setIsLoading(false);
     })();
 
@@ -149,11 +141,11 @@ export function TaskDetailScreen() {
     setReloadToken((value) => value + 1);
   }
 
-  if (isLoading) {
+  if (isLoading || roleLoading) {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <TaskDetailSkeleton />
       </Screen>
     );
   }
@@ -182,8 +174,10 @@ export function TaskDetailScreen() {
         onBack={() => router.replace(`/(app)/weddings/${weddingId}/checklist` as Href)}
       />
 
-      <Card style={styles.card}>
-        <AppText variant="title">{task.title}</AppText>
+      <Card style={styles.card} ornament>
+        <AppText variant="title" color="heading">
+          {task.title}
+        </AppText>
         {task.description ? (
           <AppText variant="body" color="textMuted">
             {task.description}

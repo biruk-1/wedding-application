@@ -31,6 +31,12 @@ export function mapWeddingError(error: { message?: string; code?: string } | Err
       message: 'Network error. Check your connection and that Supabase is running.',
     };
   }
+  if (code === 'too_large' || message.includes('under 5')) {
+    return { code: 'too_large', message: rawMessage || 'Choose a photo under 5 MB.' };
+  }
+  if (code === 'read_failed') {
+    return { code: 'read_failed', message: rawMessage || 'Could not read the selected photo.' };
+  }
 
   return {
     code,

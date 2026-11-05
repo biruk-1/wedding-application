@@ -6,7 +6,7 @@ import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { AuthScreenSkeleton } from '@/components/ui/Skeleton';
+import { WeddingListSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { normalizeCelebrationKind } from '@/features/weddings/celebrationCopy';
 import { WeddingListCard } from '@/features/weddings/components/WeddingListCard';
 import { useMyWeddings } from '@/features/weddings/hooks/useMyWeddings';
@@ -23,7 +23,7 @@ export function WeddingSelectorScreen() {
     return (
       <Screen>
         <StatusBar style="dark" />
-        <AuthScreenSkeleton />
+        <WeddingListSkeleton />
       </Screen>
     );
   }

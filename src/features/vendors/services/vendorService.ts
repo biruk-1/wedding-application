@@ -1,3 +1,5 @@
+import { getMyWeddingAccess } from '@/features/team/services/teamService';
+import { legacyCanWrite } from '@/features/team/utils/teamAccess';
 import { mapVendorError, type VendorUserMessage } from '@/features/vendors/services/vendorErrors';
 import type {
   CreateInquiryInput,
@@ -280,16 +282,7 @@ export async function createVendorInquiry(
 }
 
 export async function canWriteWedding(weddingId: string): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.id) return false;
-  const { data } = await supabase
-    .from('wedding_members')
-    .select('role')
-    .eq('wedding_id', weddingId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-  const role = data?.role;
-  return Boolean(role && role !== 'viewer');
+  const access = await getMyWeddingAccess(weddingId);
+  if (!access.ok) return false;
+  return legacyCanWrite(access.data);
 }

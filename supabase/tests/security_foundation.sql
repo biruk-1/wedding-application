@@ -240,11 +240,9 @@ begin
   begin
     perform set_config('role', 'authenticated', true);
     perform token_hash from public.wedding_invites where id = v_invite_id;
-    -- If column privilege works, this errors
+    raise exception 'FAIL: token_hash must not be readable by authenticated';
   exception
     when insufficient_privilege then null;
-    when undefined_column then null;
-    when others then null;
   end;
 
   -- Accept as viewer
@@ -266,10 +264,13 @@ begin
       end if;
   end;
 
-  -- Expired token
+  -- Expired token: invites must live at least an hour, so backdate as the DB admin.
   perform set_config('request.jwt.claim.sub', u_owner::text, true);
   select invite_id, raw_token into v_invite_id, v_invite_token
-  from public.create_wedding_invite(w1.id, 'collaborator', 'expired@kiburan.test', null, interval '-1 hour');
+  from public.create_wedding_invite(w1.id, 'collaborator', 'other@kiburan.test', null, interval '1 day');
+  perform set_config('role', 'postgres', true);
+  update public.wedding_invites set expires_at = now() - interval '1 hour' where id = v_invite_id;
+  perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claim.sub', u_other::text, true);
   begin
     perform public.accept_wedding_invite(v_invite_token);
@@ -298,18 +299,9 @@ begin
   -- Viewer cannot insert tasks
   begin
     insert into public.wedding_tasks (wedding_id, title) values (w1.id, 'Viewer task');
-    -- count as postgres
-    perform set_config('role', 'postgres', true);
-    select count(*) into v_count from public.wedding_tasks where title = 'Viewer task';
-    perform set_config('role', 'authenticated', true);
-    perform set_config('request.jwt.claim.sub', u_viewer::text, true);
-    if v_count <> 0 then
-      raise exception 'FAIL: viewer wrote a task';
-    end if;
+    raise exception 'FAIL: viewer wrote a task';
   exception
-    when others then
-      if sqlerrm like 'FAIL:%' then raise; end if;
-      null;
+    when insufficient_privilege then null;
   end;
 
   -- Vendor public browse rules

@@ -5,7 +5,7 @@ export const BUDGET_CATEGORY_COLUMNS = 'id, slug, name_en, name_am';
 export const WEDDING_BUDGET_COLUMNS = 'wedding_id, total_budget, currency_code, updated_at';
 
 export const BUDGET_ITEM_COLUMNS =
-  'id, wedding_id, category_id, wedding_vendor_id, booking_id, label, estimated_amount, committed_amount, notes, created_at';
+  'id, wedding_id, category_id, wedding_vendor_id, booking_id, label, estimated_amount, committed_amount, notes, created_at, item_kind';
 
 export const BUDGET_ITEM_LIST_SELECT = `${BUDGET_ITEM_COLUMNS},
   category:budget_categories ( id, slug, name_en ),

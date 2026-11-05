@@ -3,20 +3,18 @@ import type { ServiceResult } from '@/lib/query/queryError';
 import { mapGuestError } from '@/features/guests/services/guestErrors';
 import {
   GUEST_GROUP_COLUMNS,
-  GUEST_LIST_SELECT,
   GUEST_SUMMARY_COLUMNS,
 } from '@/features/guests/services/guestSelects';
 import type {
-  Guest,
   GuestGroup,
   GuestGroupInput,
   GuestInput,
   GuestListItem,
   GuestListPage,
   GuestServerFilters,
+  GuestStats,
   GuestSummary,
 } from '@/features/guests/types';
-import { buildGuestSearchFilter, escapeIlikeLiteral } from '@/features/guests/utils/guestHelpers';
 import type { Database } from '@/types/database.types';
 
 export const GUEST_PAGE_SIZE = 40;
@@ -31,6 +29,43 @@ function fail(error: { message?: string; code?: string } | Error | null): GuestR
 
 function notFound(message: string): GuestResult<never> {
   return { ok: false, error: { code: 'not_found', message } };
+}
+
+function parseGuestRow(raw: unknown): GuestListItem | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as Record<string, unknown>;
+  if (typeof row.id !== 'string' || typeof row.wedding_id !== 'string' || typeof row.full_name !== 'string') {
+    return null;
+  }
+  const groupRaw = row.group;
+  let group: GuestListItem['group'] = null;
+  if (groupRaw && typeof groupRaw === 'object') {
+    const g = groupRaw as Record<string, unknown>;
+    if (typeof g.id === 'string') {
+      group = { id: g.id, name: typeof g.name === 'string' ? g.name : '' };
+    }
+  }
+  return {
+    id: row.id,
+    wedding_id: row.wedding_id,
+    group_id: typeof row.group_id === 'string' ? row.group_id : null,
+    full_name: row.full_name,
+    phone: typeof row.phone === 'string' ? row.phone : null,
+    email: typeof row.email === 'string' ? row.email : null,
+    side: (typeof row.side === 'string' ? row.side : null) as GuestListItem['side'],
+    guest_type: (typeof row.guest_type === 'string' ? row.guest_type : null) as GuestListItem['guest_type'],
+    plus_one_allowed: Boolean(row.plus_one_allowed),
+    dietary_notes: typeof row.dietary_notes === 'string' ? row.dietary_notes : null,
+    notes: typeof row.notes === 'string' ? row.notes : null,
+    created_at: typeof row.created_at === 'string' ? row.created_at : '',
+    created_by: typeof row.created_by === 'string' ? row.created_by : null,
+    updated_by: typeof row.updated_by === 'string' ? row.updated_by : null,
+    updated_at: typeof row.updated_at === 'string' ? row.updated_at : null,
+    group,
+    created_by_name: typeof row.created_by_name === 'string' ? row.created_by_name : null,
+    updated_by_name: typeof row.updated_by_name === 'string' ? row.updated_by_name : null,
+    contacts_visible: row.contacts_visible !== false,
+  };
 }
 
 // --- Groups ----------------------------------------------------------------------------------
@@ -93,78 +128,69 @@ export async function updateGuestGroup(
   return { ok: true, data: data as unknown as GuestGroup };
 }
 
-/**
- * `invitations.group_id` is ON DELETE SET NULL, but the table also requires guest_id OR group_id.
- * Invitations addressed only to this group would violate that CHECK and block the delete, so they
- * are removed first (their links stop working). Invitations that also name a guest survive.
- */
-export async function deleteGuestGroup(weddingId: string, groupId: string): Promise<GuestResult<true>> {
-  const cleanup = await supabase
-    .from('invitations')
-    .delete()
-    .eq('wedding_id', weddingId)
-    .eq('group_id', groupId)
-    .is('guest_id', null);
-  if (cleanup.error) return fail(cleanup.error);
+/** Owner/manage_all: create Bride's / Groom's family groups when missing (D10). */
+export async function ensureFamilyGuestGroups(
+  weddingId: string,
+): Promise<GuestResult<{ partnerOneGroupId: string; partnerTwoGroupId: string; createdSides: string[] }>> {
+  const { data, error } = await supabase.rpc('ensure_family_guest_groups', {
+    p_wedding_id: weddingId,
+  });
+  if (error) return fail(error);
+  if (!data || typeof data !== 'object') return fail(new Error('No family groups returned'));
+  const row = data as Record<string, unknown>;
+  const created = Array.isArray(row.created_sides)
+    ? row.created_sides.filter((item): item is string => typeof item === 'string')
+    : [];
+  if (typeof row.partner_one_group_id !== 'string' || typeof row.partner_two_group_id !== 'string') {
+    return fail(new Error('Family groups incomplete'));
+  }
+  return {
+    ok: true,
+    data: {
+      partnerOneGroupId: row.partner_one_group_id,
+      partnerTwoGroupId: row.partner_two_group_id,
+      createdSides: created,
+    },
+  };
+}
 
-  const { error } = await supabase
-    .from('guest_groups')
-    .delete()
-    .eq('id', groupId)
-    .eq('wedding_id', weddingId);
+export async function deleteGuestGroup(weddingId: string, groupId: string): Promise<GuestResult<true>> {
+  const { error } = await supabase.rpc('delete_guest_group', {
+    p_wedding_id: weddingId,
+    p_group_id: groupId,
+  });
   if (error) return fail(error);
   return { ok: true, data: true };
 }
 
 // --- Guests ----------------------------------------------------------------------------------
 
-type RawGuestListRow = Guest & {
-  group: GuestListItem['group'] | NonNullable<GuestListItem['group']>[] | null;
-};
-
-function normalizeGuest(row: RawGuestListRow): GuestListItem {
-  const { group, ...guest } = row;
-  return { ...guest, group: Array.isArray(group) ? (group[0] ?? null) : group };
-}
-
-/**
- * One page of guests, ordered by name. Search is a server-side ilike over name/email/phone and
- * the group filter is applied in SQL. One extra row is requested to learn whether more exist.
- */
 export async function listGuests(
   weddingId: string,
   filters: GuestServerFilters,
   page = 0,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<GuestResult<GuestListPage>> {
-  const from = page * GUEST_PAGE_SIZE;
-  let query = supabase
-    .from('guests')
-    .select(GUEST_LIST_SELECT)
-    .eq('wedding_id', weddingId)
-    .order('full_name', { ascending: true })
-    .order('id', { ascending: true })
-    .range(from, from + GUEST_PAGE_SIZE);
-
-  if (filters.groupId) query = query.eq('group_id', filters.groupId);
-  const search = buildGuestSearchFilter(filters.query);
-  if (search) query = query.or(search);
-  if (signal) query = query.abortSignal(signal);
-
-  const { data, error } = await query;
+  const { data, error } = await supabase.rpc('list_wedding_guests', {
+    p_wedding_id: weddingId,
+    p_query: filters.query || undefined,
+    p_group_id: filters.groupId ?? undefined,
+    p_limit: GUEST_PAGE_SIZE,
+    p_offset: page * GUEST_PAGE_SIZE,
+  });
   if (error) return fail(error);
-
-  const rows = ((data ?? []) as unknown as RawGuestListRow[]).map(normalizeGuest);
+  if (!data || typeof data !== 'object') return { ok: true, data: { items: [], hasMore: false } };
+  const row = data as Record<string, unknown>;
+  const itemsRaw = Array.isArray(row.items) ? row.items : [];
   return {
     ok: true,
-    data: { items: rows.slice(0, GUEST_PAGE_SIZE), hasMore: rows.length > GUEST_PAGE_SIZE },
+    data: {
+      items: itemsRaw.map(parseGuestRow).filter((item): item is GuestListItem => item !== null),
+      hasMore: Boolean(row.has_more),
+    },
   };
 }
 
-/**
- * Every guest of the wedding with only the columns stats, pickers and seating need. Pages through
- * PostgREST's row cap so large guest lists are not silently truncated.
- */
 export async function listGuestSummaries(
   weddingId: string,
   signal?: AbortSignal,
@@ -189,25 +215,47 @@ export async function listGuestSummaries(
   return { ok: true, data: all };
 }
 
-/** Scoped to the wedding in the URL so a guest id from another wedding never renders here. */
+export async function getGuestStats(
+  weddingId: string,
+  eventId?: string | null,
+): Promise<GuestResult<GuestStats>> {
+  const { data, error } = await supabase.rpc('get_guest_stats', {
+    p_wedding_id: weddingId,
+    p_event_id: eventId ?? undefined,
+  });
+  if (error) return fail(error);
+  if (!data || typeof data !== 'object') {
+    return { ok: true, data: { total: 0, yes: 0, no: 0, maybe: 0, pending: 0, plusOnesAllowed: 0 } };
+  }
+  const row = data as Record<string, unknown>;
+  return {
+    ok: true,
+    data: {
+      total: Number(row.total ?? 0),
+      yes: Number(row.yes ?? 0),
+      no: Number(row.no ?? 0),
+      maybe: Number(row.maybe ?? 0),
+      pending: Number(row.pending ?? 0),
+      plusOnesAllowed: Number(row.plus_ones_allowed ?? 0),
+    },
+  };
+}
+
 export async function getGuest(
   weddingId: string,
   guestId: string,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<GuestResult<GuestListItem>> {
-  let query = supabase
-    .from('guests')
-    .select(GUEST_LIST_SELECT)
-    .eq('id', guestId)
-    .eq('wedding_id', weddingId);
-  if (signal) query = query.abortSignal(signal);
-  const { data, error } = await query.maybeSingle();
+  const { data, error } = await supabase.rpc('get_wedding_guest', {
+    p_wedding_id: weddingId,
+    p_guest_id: guestId,
+  });
   if (error) return fail(error);
-  if (!data) return notFound('Guest not found or unavailable.');
-  return { ok: true, data: normalizeGuest(data as unknown as RawGuestListRow) };
+  const guest = parseGuestRow(data);
+  if (!guest) return notFound('Guest not found or unavailable.');
+  return { ok: true, data: guest };
 }
 
-/** Soft duplicate check: same wedding, same name and same email (only when an email is given). */
 async function findDuplicateGuest(
   weddingId: string,
   fullName: string,
@@ -215,17 +263,14 @@ async function findDuplicateGuest(
   excludeGuestId?: string,
 ): Promise<GuestResult<boolean>> {
   if (!email) return { ok: true, data: false };
-  let query = supabase
-    .from('guests')
-    .select('id')
-    .eq('wedding_id', weddingId)
-    .ilike('full_name', escapeIlikeLiteral(fullName.trim()))
-    .ilike('email', escapeIlikeLiteral(email.trim()))
-    .limit(1);
-  if (excludeGuestId) query = query.neq('id', excludeGuestId);
-  const { data, error } = await query;
+  const { data, error } = await supabase.rpc('guest_name_email_taken', {
+    p_wedding_id: weddingId,
+    p_full_name: fullName.trim(),
+    p_email: email.trim(),
+    p_exclude_guest_id: excludeGuestId ?? undefined,
+  });
   if (error) return fail(error);
-  return { ok: true, data: (data ?? []).length > 0 };
+  return { ok: true, data: Boolean(data) };
 }
 
 const DUPLICATE_GUEST: GuestResult<never> = {
@@ -272,10 +317,10 @@ export async function createGuest(
       dietary_notes: input.dietaryNotes?.trim() || null,
       notes: input.notes?.trim() || null,
     })
-    .select(GUEST_LIST_SELECT)
+    .select('id')
     .single();
   if (error) return fail(error);
-  return { ok: true, data: normalizeGuest(data as unknown as RawGuestListRow) };
+  return getGuest(weddingId, data.id);
 }
 
 export async function updateGuest(
@@ -284,15 +329,8 @@ export async function updateGuest(
   input: Partial<GuestInput>,
 ): Promise<GuestResult<GuestListItem>> {
   if (input.fullName !== undefined || input.email !== undefined) {
-    // The duplicate check needs both parts, so fill the missing one from the stored row.
-    const current = await supabase
-      .from('guests')
-      .select('full_name, email')
-      .eq('id', guestId)
-      .eq('wedding_id', weddingId)
-      .maybeSingle();
-    if (current.error) return fail(current.error);
-    if (!current.data) return notFound('Guest not found or unavailable.');
+    const current = await getGuest(weddingId, guestId);
+    if (!current.ok) return current;
     const fullName = input.fullName ?? current.data.full_name;
     const email = input.email !== undefined ? input.email : current.data.email;
     const duplicate = await findDuplicateGuest(weddingId, fullName, email, guestId);
@@ -305,30 +343,20 @@ export async function updateGuest(
     .update(guestPatch(input))
     .eq('id', guestId)
     .eq('wedding_id', weddingId)
-    .select(GUEST_LIST_SELECT)
+    .select('id')
     .maybeSingle();
   if (error) return fail(error);
   if (!data) {
     return notFound('This guest could not be updated. They may have been removed, or you may not have permission.');
   }
-  return { ok: true, data: normalizeGuest(data as unknown as RawGuestListRow) };
+  return getGuest(weddingId, guestId);
 }
 
-/**
- * `invitations.guest_id` is ON DELETE SET NULL; an invitation addressed only to this guest
- * (no group) would violate the guest_id OR group_id CHECK and block the delete, so it is removed
- * first. Invitations that also name a group stay and simply lose the guest reference.
- */
 export async function deleteGuest(weddingId: string, guestId: string): Promise<GuestResult<true>> {
-  const cleanup = await supabase
-    .from('invitations')
-    .delete()
-    .eq('wedding_id', weddingId)
-    .eq('guest_id', guestId)
-    .is('group_id', null);
-  if (cleanup.error) return fail(cleanup.error);
-
-  const { error } = await supabase.from('guests').delete().eq('id', guestId).eq('wedding_id', weddingId);
+  const { error } = await supabase.rpc('delete_guest', {
+    p_wedding_id: weddingId,
+    p_guest_id: guestId,
+  });
   if (error) return fail(error);
   return { ok: true, data: true };
 }

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View, type ViewProps } from 'react-native';
 
+import { HeaderOrnament } from '@/components/theme/ornaments';
 import { AppText } from '@/components/ui/AppText';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
@@ -39,9 +40,10 @@ export function Header({
         <View style={styles.side} />
       )}
       <View style={styles.titles}>
-        <AppText variant="title" color="heading" style={styles.title}>
+        <AppText variant="title" color="heading" style={styles.title} accessibilityRole="header">
           {title}
         </AppText>
+        <HeaderOrnament />
         {subtitle ? (
           <AppText variant="caption" color="textMuted" style={styles.subtitle}>
             {subtitle}

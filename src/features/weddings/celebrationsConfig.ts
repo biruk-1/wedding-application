@@ -14,9 +14,9 @@ export type CelebrationConfig = {
 };
 
 const STYLE_IMAGES = {
-  modern: require('../../../assets/images/style-modern.jpg'),
-  traditional: require('../../../assets/images/style-traditional.jpg'),
-  blend: require('../../../assets/images/style-blend.jpg'),
+  modern: require('../../../assets/themes/modern/wedding-images/preview.jpg'),
+  traditional: require('../../../assets/themes/traditional/wedding-images/preview.jpg'),
+  blend: require('../../../assets/themes/fusion/wedding-images/preview.jpg'),
 } satisfies Record<string, ImageSourcePropType>;
 
 const EVENT_IMAGES = {

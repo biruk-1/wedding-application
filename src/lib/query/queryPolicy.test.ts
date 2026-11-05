@@ -22,6 +22,8 @@ describe('query keys', () => {
       queryKeys.task('a', 'w', 't'),
       queryKeys.taskComments('a', 'w', 't'),
       queryKeys.weddingMembers('a', 'w'),
+      queryKeys.myAccess('a', 'w'),
+      queryKeys.teamMembers('a', 'w'),
       queryKeys.weddingVendor('a', 'w', 'v'),
       queryKeys.taskCategories('a'),
       queryKeys.checklistTemplateCount('a'),

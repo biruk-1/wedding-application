@@ -10,12 +10,14 @@ import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
 import { Chip } from '@/features/guests/components/Chip';
 import {
   useDeleteGuestGroup,
+  useEnsureFamilyGuestGroups,
   useGuestGroups,
   useGuestSummaries,
   useSaveGuestGroup,
@@ -23,7 +25,7 @@ import {
 import type { GuestGroup } from '@/features/guests/types';
 import { GUEST_SIDES, sideLabel } from '@/features/guests/utils/guestHelpers';
 import { fieldErrorsFromZod, groupFormSchema } from '@/features/guests/validation/guestSchemas';
-import { useWeddingRole } from '@/features/weddings/queries';
+import { useWeddingAccess } from '@/features/team/queries';
 import { useBackTo } from '@/lib/navigation';
 import { errorMessage } from '@/lib/query/queryError';
 import { spacing } from '@/theme/spacing';
@@ -32,12 +34,14 @@ export function GuestGroupsScreen() {
   const router = useRouter();
   const { weddingId } = useLocalSearchParams<{ weddingId: string }>();
   const goBack = useBackTo(`/(app)/weddings/${weddingId}/guests`);
-  const { canWrite } = useWeddingRole(weddingId);
+  const { can, isOwner } = useWeddingAccess(weddingId);
+  const canManageGroups = isOwner || can('guests.manage_all');
 
   const groupsQuery = useGuestGroups(weddingId);
   const summariesQuery = useGuestSummaries(weddingId);
   const save = useSaveGuestGroup(weddingId ?? '');
   const remove = useDeleteGuestGroup(weddingId ?? '');
+  const ensureFamily = useEnsureFamilyGuestGroups(weddingId ?? '');
 
   const [editing, setEditing] = useState<GuestGroup | null>(null);
   const [name, setName] = useState('');
@@ -163,7 +167,21 @@ export function GuestGroupsScreen() {
       />
 
       <View style={styles.stack}>
-        {canWrite ? (
+        {canManageGroups ? (
+          <Button
+            label="Create family groups"
+            variant="secondary"
+            loading={ensureFamily.isPending}
+            onPress={() => {
+              setFormError(null);
+              ensureFamily.mutate(undefined, {
+                onError: (error) => setFormError(errorMessage(error)),
+              });
+            }}
+          />
+        ) : null}
+
+        {canManageGroups ? (
           <Card style={styles.card}>
             <AppText variant="label">{editing ? 'Edit group' : 'New group'}</AppText>
             <TextField
@@ -196,14 +214,11 @@ export function GuestGroupsScreen() {
         ) : null}
 
         {groups.length === 0 ? (
-          <View style={styles.stack}>
-            <AppText variant="subtitle" style={styles.center}>
-              No groups yet
-            </AppText>
-            <AppText color="textMuted" style={styles.center}>
-              Groups help you invite families or friends together and filter your guest list.
-            </AppText>
-          </View>
+          <EmptyState
+            icon="people-circle-outline"
+            title="No groups yet"
+            description="Groups help you invite families or friends together and filter your guest list."
+          />
         ) : (
           groups.map((group) => {
             const count = memberCounts.get(group.id) ?? 0;
@@ -225,7 +240,7 @@ export function GuestGroupsScreen() {
                     {group.notes}
                   </AppText>
                 ) : null}
-                {canWrite ? (
+                {canManageGroups ? (
                   <View style={styles.rowActions}>
                     <Button
                       label="Add guest"

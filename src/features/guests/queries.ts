@@ -12,7 +12,9 @@ import {
   createGuestGroup,
   deleteGuest,
   deleteGuestGroup,
+  ensureFamilyGuestGroups,
   getGuest,
+  getGuestStats,
   listGuestGroups,
   listGuestSummaries,
   listGuests,
@@ -140,6 +142,32 @@ export function useGuestSummaries(weddingId: string | undefined) {
   });
 }
 
+/** Server-scoped totals so coordinators never infer other groups' counts. */
+export function useGuestStats(weddingId: string | undefined, eventId: string | null) {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: queryKeys.guestStats(userId ?? '', weddingId ?? '', eventId),
+    queryFn: async () => unwrap(await getGuestStats(weddingId!, eventId)),
+    enabled: Boolean(userId && weddingId),
+    staleTime: staleTimes.collaborative,
+  });
+}
+
+export function useEnsureFamilyGuestGroups(weddingId: string) {
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      requireUser(userId);
+      return unwrap(await ensureFamilyGuestGroups(weddingId));
+    },
+    onSuccess: () => {
+      const uid = requireUser(userId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.guestGroups(uid, weddingId) });
+    },
+  });
+}
+
 /** Paged guest list. Search is debounced so each keystroke does not start a request. */
 export function useGuestList(
   weddingId: string | undefined,
@@ -216,6 +244,9 @@ export function useSaveGuest(weddingId: string) {
       const uid = requireUser(userId);
       queryClient.setQueryData(queryKeys.guest(uid, weddingId, guest.id), guest);
       void queryClient.invalidateQueries({ queryKey: queryKeys.guestsRoot(uid, weddingId) });
+      void queryClient.invalidateQueries({
+        queryKey: ['u', uid, 'wedding', weddingId, 'guests', 'stats'],
+      });
     },
   });
 }
@@ -232,6 +263,9 @@ export function useDeleteGuest(weddingId: string) {
       const uid = requireUser(userId);
       queryClient.removeQueries({ queryKey: queryKeys.guest(uid, weddingId, guestId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.guestsRoot(uid, weddingId) });
+      void queryClient.invalidateQueries({
+        queryKey: ['u', uid, 'wedding', weddingId, 'guests', 'stats'],
+      });
       void queryClient.invalidateQueries({ queryKey: queryKeys.invitations(uid, weddingId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.guestRsvps(uid, weddingId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.seatingRoot(uid, weddingId) });

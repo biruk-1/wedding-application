@@ -1,6 +1,7 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,7 +14,6 @@ import { Card } from '@/components/ui/Card';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { formatMoney } from '@/features/budget/utils/money';
 import { useBudgetDashboard } from '@/features/budget/queries';
-import { ProgressHeader } from '@/features/checklist/components/ProgressHeader';
 import { useToggleTaskStatus, useWeddingTasks } from '@/features/checklist/queries';
 import { computeChecklistProgress } from '@/features/checklist/utils/taskHelpers';
 import { useGuestSummaries, useInvitations } from '@/features/guests/queries';
@@ -26,8 +26,10 @@ import {
   type FeatureShortcut,
 } from '@/features/weddings/components/FeatureShortcutGrid';
 import { UpcomingTaskCard } from '@/features/weddings/components/UpcomingTaskCard';
-import { useWedding, useWeddingRole } from '@/features/weddings/queries';
+import { WeddingProgressCard } from '@/features/weddings/components/WeddingProgressCard';
+import { useUploadWeddingCover, useWedding, useWeddingRole } from '@/features/weddings/queries';
 import { useSavedVendorCount } from '@/features/weddings/queries/useSavedVendorCount';
+import { getCountdownParts } from '@/features/weddings/utils/countdown';
 import { markMilestone } from '@/lib/perf';
 import { errorMessage } from '@/lib/query/queryError';
 import { spacing } from '@/theme/spacing';
@@ -39,12 +41,51 @@ export function WeddingDashboardScreen() {
   const weddingQuery = useWedding(weddingId);
   const wedding = weddingQuery.data;
   const { canWrite } = useWeddingRole(weddingId);
+  const coverUpload = useUploadWeddingCover(weddingId);
   const tasksQuery = useWeddingTasks(weddingId);
   const budgetQuery = useBudgetDashboard(weddingId);
   const guestsQuery = useGuestSummaries(weddingId);
   const invitationsQuery = useInvitations(weddingId);
   const savedVendors = useSavedVendorCount(weddingId);
   const toggle = useToggleTaskStatus(weddingId ?? '');
+
+  const handleEditCover = useCallback(() => {
+    const copy = getCelebrationCopy(wedding?.celebration_kind);
+    Alert.alert(copy.editDialogTitle, copy.editDialogBody, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: wedding?.cover_image_url ? 'Replace photo' : 'Choose photo',
+        onPress: () => {
+          void (async () => {
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
+              Alert.alert(
+                'Permission needed',
+                'Allow photo library access to update your cover image.',
+              );
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [3, 4],
+              quality: 0.85,
+            });
+            if (result.canceled || !result.assets[0]) return;
+            const asset = result.assets[0];
+            coverUpload.mutate(
+              { uri: asset.uri, mimeType: asset.mimeType },
+              {
+                onError: (error) => {
+                  Alert.alert('Could not update cover', errorMessage(error));
+                },
+              },
+            );
+          })();
+        },
+      },
+    ]);
+  }, [coverUpload, wedding?.celebration_kind, wedding?.cover_image_url]);
 
   useEffect(() => {
     if (wedding) markMilestone('dashboard:first-usable');
@@ -53,6 +94,10 @@ export function WeddingDashboardScreen() {
   const progress = useMemo(
     () => computeChecklistProgress(tasksQuery.data ?? []),
     [tasksQuery.data],
+  );
+  const countdown = useMemo(
+    () => (weddingQuery.data?.wedding_date ? getCountdownParts(weddingQuery.data.wedding_date) : null),
+    [weddingQuery.data?.wedding_date],
   );
 
   const upcomingTasks = useMemo(() => {
@@ -167,7 +212,7 @@ export function WeddingDashboardScreen() {
       label: 'Budget',
       sublabel: budgetHint ?? 'Set up',
       icon: 'wallet-outline' as const,
-      tone: 'green' as const,
+      tone: 'gold' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/budget` as Href),
       enabled: copy.capabilities.budget,
     },
@@ -176,7 +221,7 @@ export function WeddingDashboardScreen() {
       label: 'Invitations',
       sublabel: sentInvites > 0 ? `${sentInvites} sent` : 'Create',
       icon: 'mail-outline' as const,
-      tone: 'gold' as const,
+      tone: 'wine' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/guests/invite` as Href),
       enabled: copy.capabilities.invitations,
     },
@@ -212,18 +257,18 @@ export function WeddingDashboardScreen() {
             partnerTwo={wedding.partner_two_name}
             weddingDate={wedding.wedding_date}
             city={wedding.city}
-            onEdit={
-              canWrite
-                ? () =>
-                    Alert.alert(
-                      copy.editDialogTitle,
-                      copy.editDialogBody,
-                    )
-                : undefined
-            }
+            coverImageUrl={wedding.cover_image_url}
+            greetingName={wedding.partner_one_name}
+            onEdit={canWrite ? handleEditCover : undefined}
+            editBusy={coverUpload.isPending}
           />
 
-          <ProgressHeader progress={progress} label={copy.progressLabel} />
+          <WeddingProgressCard
+            progress={progress}
+            daysLeft={countdown?.days ?? null}
+            isPast={countdown?.isPast}
+            label={copy.progressLabel}
+          />
 
           <FeatureShortcutGrid items={shortcuts} />
 

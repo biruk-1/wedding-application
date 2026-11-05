@@ -10,6 +10,7 @@ import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { Chip } from '@/features/guests/components/Chip';
 import {
@@ -255,20 +256,19 @@ export function InvitationTrackingScreen() {
 
   const emptyState =
     invitations.length === 0 ? (
-      <View style={styles.empty}>
-        <AppText variant="subtitle" style={styles.center}>
-          No invitations yet
-        </AppText>
-        <AppText color="textMuted" style={styles.center}>
-          Create an invitation for a guest or group, then share its link.
-        </AppText>
-        {canWrite ? (
-          <Button
-            label="Invite guests"
-            onPress={() => router.push(`/(app)/weddings/${weddingId}/guests/invite` as Href)}
-          />
-        ) : null}
-      </View>
+      <EmptyState
+        icon="mail-open-outline"
+        title="No invitations yet"
+        description="Create an invitation for a guest or group, then share its link."
+        action={
+          canWrite ? (
+            <Button
+              label="Invite guests"
+              onPress={() => router.push(`/(app)/weddings/${weddingId}/guests/invite` as Href)}
+            />
+          ) : null
+        }
+      />
     ) : (
       <AppText color="textMuted" style={[styles.center, styles.empty]}>
         No invitations with this status.

@@ -49,10 +49,9 @@ function eventCopy(
     countdownAccessibilityLabel: `${label} countdown`,
     pastDateLabel: `Since the ${eventNoun}`,
     unavailableLabel: `${label} unavailable.`,
-    editAccessibilityLabel: `Edit ${eventNoun}`,
-    editDialogTitle: `Edit ${eventNoun}`,
-    editDialogBody:
-      'Event profile editing will open here. For now use More to manage planning tools.',
+    editAccessibilityLabel: `Change ${eventNoun} cover photo`,
+    editDialogTitle: `Cover photo`,
+    editDialogBody: `Choose a new photo for your ${eventNoun} home banner.`,
     successTitle: `${label} created`,
     successBody: `Your ${eventNoun} space is ready. You are the owner and can invite collaborators later.`,
     capabilities: AVAILABLE_MODULES,
@@ -68,10 +67,9 @@ export const CELEBRATION_COPY: Record<CelebrationKind, CelebrationCopy> = {
     countdownAccessibilityLabel: 'Wedding countdown',
     pastDateLabel: 'Since your wedding day',
     unavailableLabel: 'Wedding unavailable.',
-    editAccessibilityLabel: 'Edit wedding',
-    editDialogTitle: 'Edit wedding',
-    editDialogBody:
-      'Wedding profile editing will open here. For now use More to manage planning tools.',
+    editAccessibilityLabel: 'Change wedding cover photo',
+    editDialogTitle: 'Cover photo',
+    editDialogBody: 'Choose a new photo for your wedding home banner.',
     successTitle: 'Wedding created',
     successBody:
       'Your wedding space is ready. You are the owner and can invite partners later.',

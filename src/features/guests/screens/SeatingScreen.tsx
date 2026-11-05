@@ -10,6 +10,7 @@ import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
@@ -353,14 +354,13 @@ function SeatingPlanner({
         ) : null}
 
         {occupancy.length === 0 ? (
-          <View style={styles.stack}>
-            <AppText variant="subtitle" style={styles.center}>
-              No tables yet
-            </AppText>
-            <AppText color="textMuted" style={styles.center}>
-              {canWrite ? 'Add a table above to start seating guests.' : 'Writers can add tables for this event.'}
-            </AppText>
-          </View>
+          <EmptyState
+            icon="grid-outline"
+            title="No tables yet"
+            description={
+              canWrite ? 'Add a table above to start seating guests.' : 'Writers can add tables for this event.'
+            }
+          />
         ) : (
           occupancy.map(({ table, assigned, isFull, isOverCapacity }) => {
             const seated = assignments

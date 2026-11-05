@@ -10,6 +10,7 @@ import { WeddingTabBar, weddingTabBarInset } from '@/components/navigation/Weddi
 import { GuestsSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { GuestFilterBar } from '@/features/guests/components/GuestFilterBar';
 import { GuestRow } from '@/features/guests/components/GuestRow';
@@ -18,15 +19,11 @@ import {
   useGuestGroups,
   useGuestList,
   useGuestRsvps,
-  useGuestSummaries,
+  useGuestStats,
   useWeddingEvents,
 } from '@/features/guests/queries';
 import type { GuestListItem, GuestRsvpFilter } from '@/features/guests/types';
-import {
-  buildRsvpStatusMap,
-  computeGuestStats,
-  filterGuests,
-} from '@/features/guests/utils/guestHelpers';
+import { buildRsvpStatusMap, filterGuests } from '@/features/guests/utils/guestHelpers';
 import { useWedding, useWeddingRole } from '@/features/weddings/queries';
 import { errorMessage } from '@/lib/query/queryError';
 import { radii } from '@/theme/radii';
@@ -57,7 +54,6 @@ export function GuestsScreen() {
   const [eventId, setEventId] = useState<string | null>(null);
 
   const list = useGuestList(weddingId, { query, groupId });
-  const summariesQuery = useGuestSummaries(weddingId);
   const rsvpsQuery = useGuestRsvps(weddingId);
   const groupsQuery = useGuestGroups(weddingId);
   const eventsQuery = useWeddingEvents(weddingId);
@@ -66,11 +62,15 @@ export function GuestsScreen() {
   const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
   const groups = useMemo(() => groupsQuery.data ?? [], [groupsQuery.data]);
   const selectedEvent = events.find((event) => event.id === eventId) ?? null;
-
-  const stats = useMemo(
-    () => computeGuestStats({ guests: summariesQuery.data ?? [], rsvps, eventId: selectedEvent?.id ?? null }),
-    [summariesQuery.data, rsvps, selectedEvent],
-  );
+  const statsQuery = useGuestStats(weddingId, selectedEvent?.id ?? null);
+  const stats = statsQuery.data ?? {
+    total: 0,
+    yes: 0,
+    no: 0,
+    maybe: 0,
+    pending: 0,
+    plusOnesAllowed: 0,
+  };
 
   const statusById = useMemo(
     () => buildRsvpStatusMap(list.guests, rsvps, selectedEvent?.id ?? null),
@@ -200,21 +200,20 @@ export function GuestsScreen() {
   );
 
   const emptyState = !hasActiveFilters ? (
-    <View style={styles.empty}>
-      <AppText variant="subtitle" style={styles.center}>
-        No guests yet
-      </AppText>
-      <AppText color="textMuted" style={styles.center}>
-        Add the people you want to invite. You can organise them into groups and track RSVPs per event.
-      </AppText>
-      {canWrite ? (
-        <Button label="Add your first guest" onPress={() => router.push(`${base}/new` as Href)} />
-      ) : (
-        <AppText variant="caption" color="textMuted" style={styles.center}>
-          Viewers can browse guests once writers add them.
-        </AppText>
-      )}
-    </View>
+    <EmptyState
+      icon="people-outline"
+      title="No guests yet"
+      description="Add the people you want to invite. You can organise them into groups and track RSVPs per event."
+      action={
+        canWrite ? (
+          <Button label="Add your first guest" onPress={() => router.push(`${base}/new` as Href)} />
+        ) : (
+          <AppText variant="caption" color="textMuted" style={styles.center}>
+            Viewers can browse guests once writers add them.
+          </AppText>
+        )
+      }
+    />
   ) : (
     <AppText color="textMuted" style={[styles.center, styles.noMatch]}>
       No guests match these filters.
@@ -484,10 +483,6 @@ function createStyles(colors: AppColors, shadows: ReturnType<typeof useThemedSha
   },
   filterNote: {
     marginBottom: spacing.md,
-  },
-  empty: {
-    gap: spacing.lg,
-    paddingVertical: spacing['2xl'],
   },
   noMatch: {
     paddingVertical: spacing.xl,

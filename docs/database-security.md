@@ -79,13 +79,13 @@ No wedding, guest, budget, invite, or private contact access for `anon`.
 
 1. No platform admin / moderator role.
 2. ~~Guest invitation public RSVP-by-token RPC not implemented.~~ Closed by `20260330120000_guest_invitation_rpcs.sql` (`create_guest_invitation`, `get_guest_invitation_by_token`, `submit_guest_invitation_rsvp`, `mark_guest_invitation_sent`). Residual gaps: no rate limiting or token expiry on the anon RPCs. Anon still has no table policies on guests/invitations — only those RPCs.
-3. Invite email/phone binding not enforced (collaborator invites).
+3. ~~Invite email/phone binding not enforced (collaborator invites).~~ Closed by `20261106090000_team_hardening.sql` once applied: invites are email-only, normalized, unique while pending, live 1 hour to 30 days, and can only be accepted by the confirmed account with that email. Phone invites wait for phone sign-in.
 4. Soft-delete / account deletion policy unresolved (audit Q3).
 5. Storage bucket policies not defined (paths only).
-6. ~~Column revoke on `invitations.token_hash` still allows writers to set hashes.~~ Guest invites must use `create_guest_invitation` (app path). Direct client inserts of `token_hash` remain technically possible under write RLS and should stay unused.
+6. ~~Column revokes on `invitations.token_hash` and `wedding_invites.token_hash` are ineffective.~~ The original column revokes did not override table-level grants, so hashes were readable and writable by `authenticated`. Closed by `20261106090000_team_hardening.sql` once applied: table grants are replaced by column grants without `token_hash`, and both tables accept inserts only through their RPCs.
 
 ## Security tests
 
-See `supabase/tests/security_foundation.sql` and `npm run db:test:security`.
+See `supabase/tests/security_foundation.sql`, `supabase/tests/planning_team_security.sql` and `npm run db:test:security` (runs both; requires the `20261106*_team_*` migrations).
 
 **Current evidence:** the security SQL suite passed, including the celebration-onboarding RPC coverage. The broader verification also passed typecheck, 34 files / 207 tests, and Expo Doctor 20/20; lint had 0 errors and the known generated-file warning.

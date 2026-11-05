@@ -1,4 +1,4 @@
-import { Link, useRouter, type Href } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -16,16 +16,19 @@ import {
   fieldErrorsFromZod,
   loginSchema,
 } from '@/features/auth/validation/authSchemas';
+import { loadPendingTeamInvite } from '@/features/team/services/pendingTeamInvite';
 import { spacing } from '@/theme/spacing';
 
 export function LoginScreen() {
   const router = useRouter();
+  const { emailHint } = useLocalSearchParams<{ emailHint?: string }>();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = typeof emailHint === 'string' ? emailHint : null;
 
   async function onSubmit() {
     setFormError(null);
@@ -42,7 +45,8 @@ export function LoginScreen() {
       setFormError(result.error.message);
       return;
     }
-    router.replace('/(app)' as Href);
+    const pending = await loadPendingTeamInvite();
+    router.replace((pending ? `/join/${pending}` : '/(app)') as Href);
   }
 
 
@@ -51,6 +55,11 @@ export function LoginScreen() {
       <StatusBar style="dark" />
       <Header title="Welcome back" subtitle="Sign in to continue planning" showBack />
       <View style={styles.form}>
+        {hint ? (
+          <AppText variant="caption" color="textMuted">
+            Use the account invited as {hint}
+          </AppText>
+        ) : null}
         <TextField
           label="Email"
           placeholder="you@example.com"

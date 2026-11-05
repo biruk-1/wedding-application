@@ -9,10 +9,10 @@ import {
   formatStartingPrice,
   vendorCoverUrl,
 } from '@/features/vendors/utils/vendorHelpers';
-import { useColors } from '@/theme/WeddingThemeContext';
+import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
-import type { AppColors } from '@/theme/types';
+import type { AppColors, ThemeDecorations } from '@/theme/types';
 import { useThemedShadows } from '@/theme/useThemedStyles';
 
 /**
@@ -26,9 +26,18 @@ export function VendorCard({
   vendor: VendorListItem;
   onPress: () => void;
 }) {
-  const colors = useColors();
+  const { colors, decorations } = useWeddingTheme();
   const shadows = useThemedShadows();
-  const styles = useMemo(() => createStyles(colors, shadows.soft), [colors, shadows.soft]);
+  const styles = useMemo(
+    () => createStyles(colors, decorations, shadows.soft),
+    [colors, decorations, shadows.soft],
+  );
+  const ctaColor =
+    decorations.environment === 'traditional'
+      ? colors.success
+      : decorations.environment === 'fusion'
+        ? colors.accent
+        : colors.primary;
   const cover = vendorCoverUrl(vendor);
   const price = formatStartingPrice(vendor.startingPrice);
   const categoryLabel = vendor.categories.map((c) => c.name_en).join(' · ') || 'Vendor';
@@ -64,16 +73,17 @@ export function VendorCard({
         </AppText>
       </View>
       <View style={styles.cta}>
-        <AppText variant="caption" style={styles.ctaLabel}>
+        <AppText variant="caption" style={[styles.ctaLabel, { color: ctaColor }]}>
           View profile
         </AppText>
-        <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+        <Ionicons name="chevron-forward" size={16} color={ctaColor} />
       </View>
     </Pressable>
   );
 }
 
-function createStyles(colors: AppColors, softShadow: object) {
+function createStyles(colors: AppColors, decorations: ThemeDecorations, softShadow: object) {
+  const env = decorations.environment;
   return StyleSheet.create({
   row: {
     flexDirection: 'row',
@@ -81,9 +91,9 @@ function createStyles(colors: AppColors, softShadow: object) {
     gap: spacing.md,
     padding: spacing.md,
     backgroundColor: colors.surfaceElevated,
-    borderRadius: radii.xl,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    borderRadius: decorations.cardRadius + 2,
+    borderWidth: env === 'traditional' ? 1 : StyleSheet.hairlineWidth,
+    borderColor: env === 'traditional' ? colors.primaryMuted : colors.border,
     ...softShadow,
   },
   pressed: {
@@ -92,8 +102,10 @@ function createStyles(colors: AppColors, softShadow: object) {
   thumb: {
     width: 72,
     height: 72,
-    borderRadius: radii.lg,
+    borderRadius: env === 'traditional' ? radii.sm : radii.lg,
     backgroundColor: colors.surfaceMuted,
+    borderWidth: env === 'modern' ? 0 : 1.5,
+    borderColor: env === 'traditional' ? colors.primary : colors.accentMuted,
   },
   thumbFallback: {
     alignItems: 'center',

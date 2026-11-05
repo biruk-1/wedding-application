@@ -38,7 +38,7 @@ import {
   sideLabel,
 } from '@/features/guests/utils/guestHelpers';
 import { fieldErrorsFromZod, guestFormSchema } from '@/features/guests/validation/guestSchemas';
-import { useWeddingRole } from '@/features/weddings/queries';
+import { useWeddingAccess } from '@/features/team/queries';
 import { useBackTo } from '@/lib/navigation';
 import { errorMessage } from '@/lib/query/queryError';
 import { radii } from '@/theme/radii';
@@ -55,7 +55,7 @@ export function GuestFormScreen({ mode }: { mode: 'create' | 'edit' }) {
     guestId?: string;
     groupId?: string;
   }>();
-  const { canWrite, isLoading: roleLoading } = useWeddingRole(weddingId);
+  const { canWrite, isLoading: roleLoading } = useWeddingAccess(weddingId);
   const guestQuery = useGuest(weddingId, mode === 'edit' ? guestId : undefined);
   const title = mode === 'create' ? 'New guest' : 'Edit guest';
 
@@ -132,11 +132,14 @@ function GuestForm({
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
   const goBack = useBackTo(`/(app)/weddings/${weddingId}/guests`);
+  const { can, canInGroup, isOwner } = useWeddingAccess(weddingId);
   const groupsQuery = useGuestGroups(weddingId);
   const eventsQuery = useWeddingEvents(weddingId);
   const rsvpsQuery = useGuestRsvps(weddingId);
   const save = useSaveGuest(weddingId);
   const removeGuest = useDeleteGuest(weddingId);
+  const showContacts =
+    mode === 'create' || guest?.contacts_visible !== false || can('guests.contacts.view');
 
   const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
   const [seatingEventId, setSeatingEventId] = useState<string | null>(null);
@@ -161,7 +164,14 @@ function GuestForm({
   const [pendingTableId, setPendingTableId] = useState<string | null | undefined>(undefined);
 
   const submitting = save.isPending || removeGuest.isPending || assign.isPending || unassign.isPending;
-  const groups = groupsQuery.data ?? [];
+  const groups = useMemo(() => {
+    const all = groupsQuery.data ?? [];
+    const weddingWide =
+      isOwner || can('guests.manage_all') || can('guests.create') || can('guests.update');
+    if (weddingWide) return all;
+    const capability = mode === 'create' ? 'create' : 'update';
+    return all.filter((group) => canInGroup(group.id, capability));
+  }, [groupsQuery.data, isOwner, can, canInGroup, mode]);
   const tables = tablesQuery.data ?? [];
   const assignments = useMemo(() => assignmentsQuery.data ?? [], [assignmentsQuery.data]);
 
@@ -185,8 +195,8 @@ function GuestForm({
     const plusOne = partySize >= 2;
     const parsed = guestFormSchema.safeParse({
       fullName,
-      phone,
-      email,
+      phone: showContacts ? phone : guest?.phone ?? '',
+      email: showContacts ? email : guest?.email ?? '',
       groupId: groupId ?? '',
       side,
       guestType,
@@ -202,14 +212,18 @@ function GuestForm({
 
     const values = {
       fullName: parsed.data.fullName,
-      phone: parsed.data.phone ?? null,
-      email: parsed.data.email ?? null,
       groupId: parsed.data.groupId ?? null,
       side: (parsed.data.side as GuestSide | undefined) ?? null,
       guestType: (parsed.data.guestType as GuestType | undefined) ?? null,
       plusOneAllowed: parsed.data.plusOneAllowed,
-      dietaryNotes: parsed.data.dietaryNotes ?? null,
-      notes: parsed.data.notes ?? null,
+      ...(showContacts
+        ? {
+            phone: parsed.data.phone ?? null,
+            email: parsed.data.email ?? null,
+            dietaryNotes: parsed.data.dietaryNotes ?? null,
+            notes: parsed.data.notes ?? null,
+          }
+        : {}),
     };
 
     save.mutate(mode === 'create' ? { mode, values } : { mode, guestId: guest!.id, values }, {
@@ -447,16 +461,18 @@ function GuestForm({
           />
         )}
 
-        <TextField
-          label="Notes"
-          value={notes}
-          onChangeText={setNotes}
-          helperText="Optional"
-          error={fieldErrors.notes}
-          editable={!submitting}
-          multiline
-          style={styles.multiline}
-        />
+        {showContacts ? (
+          <TextField
+            label="Notes"
+            value={notes}
+            onChangeText={setNotes}
+            helperText="Optional"
+            error={fieldErrors.notes}
+            editable={!submitting}
+            multiline
+            style={styles.multiline}
+          />
+        ) : null}
 
         <AppText variant="label">Tags</AppText>
         <View style={styles.chips}>
@@ -477,36 +493,44 @@ function GuestForm({
           ))}
         </View>
 
-        <TextField
-          label="Phone"
-          value={phone}
-          onChangeText={setPhone}
-          helperText="Optional"
-          error={fieldErrors.phone}
-          editable={!submitting}
-          keyboardType="phone-pad"
-        />
-        <TextField
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          helperText="Optional"
-          error={fieldErrors.email}
-          editable={!submitting}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TextField
-          label="Dietary notes"
-          value={dietaryNotes}
-          onChangeText={setDietaryNotes}
-          helperText="Optional"
-          error={fieldErrors.dietaryNotes}
-          editable={!submitting}
-          multiline
-          style={styles.multiline}
-        />
+        {showContacts ? (
+          <>
+            <TextField
+              label="Phone"
+              value={phone}
+              onChangeText={setPhone}
+              helperText="Optional"
+              error={fieldErrors.phone}
+              editable={!submitting}
+              keyboardType="phone-pad"
+            />
+            <TextField
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              helperText="Optional"
+              error={fieldErrors.email}
+              editable={!submitting}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TextField
+              label="Dietary notes"
+              value={dietaryNotes}
+              onChangeText={setDietaryNotes}
+              helperText="Optional"
+              error={fieldErrors.dietaryNotes}
+              editable={!submitting}
+              multiline
+              style={styles.multiline}
+            />
+          </>
+        ) : (
+          <AppText variant="caption" color="textMuted">
+            Contact details are hidden for your role.
+          </AppText>
+        )}
       </Card>
 
       <View style={styles.actions}>
