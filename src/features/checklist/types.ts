@@ -18,7 +18,7 @@ export type TaskWithRelations = WeddingTask & {
   }[];
 };
 
-export type StatusFilter = 'all' | 'todo' | 'in_progress' | 'done' | 'overdue';
+export type StatusFilter = 'all' | 'todo' | 'in_progress' | 'done' | 'overdue' | 'assigned_to_me';
 
 export type CreateTaskInput = {
   weddingId: string;

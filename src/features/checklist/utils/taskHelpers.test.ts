@@ -70,4 +70,24 @@ describe('filterTasks', () => {
     expect(filterTasks(sample, { status: 'overdue' })).toHaveLength(1);
     expect(filterTasks(sample, { status: 'all', categoryId: 'c1' })).toHaveLength(2);
   });
+
+  it('filters assigned_to_me by current user', () => {
+    const withAssignees = [
+      task({
+        id: '1',
+        title: 'Mine',
+        status: 'todo',
+        assignees: [{ user_id: 'u1', assigned_at: '', profile: null }],
+      }),
+      task({
+        id: '2',
+        title: 'Theirs',
+        status: 'todo',
+        assignees: [{ user_id: 'u2', assigned_at: '', profile: null }],
+      }),
+    ];
+    expect(
+      filterTasks(withAssignees, { status: 'assigned_to_me', currentUserId: 'u1' }).map((t) => t.id),
+    ).toEqual(['1']);
+  });
 });

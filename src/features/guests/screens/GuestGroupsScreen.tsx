@@ -240,32 +240,51 @@ export function GuestGroupsScreen() {
                     {group.notes}
                   </AppText>
                 ) : null}
-                {canManageGroups ? (
+                {canManageGroups || isOwner ? (
                   <View style={styles.rowActions}>
-                    <Button
-                      label="Add guest"
-                      variant="secondary"
-                      fullWidth={false}
-                      style={styles.small}
-                      onPress={() =>
-                        router.push(`/(app)/weddings/${weddingId}/guests/new?groupId=${group.id}` as Href)
-                      }
-                    />
-                    <Button
-                      label="Edit"
-                      variant="secondary"
-                      fullWidth={false}
-                      style={styles.small}
-                      onPress={() => startEdit(group)}
-                    />
-                    <Button
-                      label="Delete"
-                      variant="danger"
-                      fullWidth={false}
-                      style={styles.small}
-                      loading={remove.isPending && remove.variables === group.id}
-                      onPress={() => onDelete(group)}
-                    />
+                    {canManageGroups ? (
+                      <Button
+                        label="Add guest"
+                        variant="secondary"
+                        fullWidth={false}
+                        style={styles.small}
+                        onPress={() =>
+                          router.push(`/(app)/weddings/${weddingId}/guests/new?groupId=${group.id}` as Href)
+                        }
+                      />
+                    ) : null}
+                    {isOwner ? (
+                      <Button
+                        label="Coordinators"
+                        variant="secondary"
+                        fullWidth={false}
+                        style={styles.small}
+                        onPress={() =>
+                          router.push(
+                            `/(app)/weddings/${weddingId}/team/groups/${group.id}` as Href,
+                          )
+                        }
+                      />
+                    ) : null}
+                    {canManageGroups ? (
+                      <>
+                        <Button
+                          label="Edit"
+                          variant="secondary"
+                          fullWidth={false}
+                          style={styles.small}
+                          onPress={() => startEdit(group)}
+                        />
+                        <Button
+                          label="Delete"
+                          variant="danger"
+                          fullWidth={false}
+                          style={styles.small}
+                          loading={remove.isPending && remove.variables === group.id}
+                          onPress={() => onDelete(group)}
+                        />
+                      </>
+                    ) : null}
                   </View>
                 ) : null}
               </Card>

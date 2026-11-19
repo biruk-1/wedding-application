@@ -7,7 +7,7 @@ import { spacing } from '@/theme/spacing';
 import type { AppColors, ThemeDecorations } from '@/theme/types';
 import { useWeddingTheme } from '@/theme/WeddingThemeContext';
 
-export type ChecklistTab = 'all' | 'todo' | 'done';
+export type ChecklistTab = 'all' | 'todo' | 'done' | 'mine';
 
 export function ChecklistStatusTabs({
   value,
@@ -15,13 +15,14 @@ export function ChecklistStatusTabs({
   onChange,
 }: {
   value: ChecklistTab;
-  counts: { all: number; todo: number; done: number };
+  counts: { all: number; todo: number; done: number; mine: number };
   onChange: (value: ChecklistTab) => void;
 }) {
   const { colors, decorations } = useWeddingTheme();
   const styles = useMemo(() => createStyles(colors, decorations), [colors, decorations]);
   const tabs: { id: ChecklistTab; label: string; count: number }[] = [
     { id: 'all', label: 'All', count: counts.all },
+    { id: 'mine', label: 'Assigned to me', count: counts.mine },
     { id: 'todo', label: 'To Do', count: counts.todo },
     { id: 'done', label: 'Completed', count: counts.done },
   ];

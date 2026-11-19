@@ -10,8 +10,10 @@ import {
   computeChecklistProgress,
   filterTasks,
 } from '@/features/checklist/utils/taskHelpers';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 export function useWeddingChecklist(weddingId: string | undefined) {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
   const [categories, setCategories] = useState<TaskCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,8 +59,14 @@ export function useWeddingChecklist(weddingId: string | undefined) {
 
   const progress = useMemo(() => computeChecklistProgress(tasks), [tasks]);
   const filtered = useMemo(
-    () => filterTasks(tasks, { status: statusFilter, categoryId, query }),
-    [tasks, statusFilter, categoryId, query],
+    () =>
+      filterTasks(tasks, {
+        status: statusFilter,
+        categoryId,
+        query,
+        currentUserId: user?.id ?? null,
+      }),
+    [tasks, statusFilter, categoryId, query, user?.id],
   );
 
   const replaceTask = useCallback((next: TaskWithRelations) => {

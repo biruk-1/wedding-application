@@ -11,10 +11,10 @@ export type AuthRedirectInput = {
   pendingJoinToken?: string | null;
 };
 
-export type AuthRedirectTarget = '/' | '/(app)' | `/join/${string}` | null;
+export type AuthRedirectTarget = '/login' | '/(app)' | `/join/${string}` | null;
 
-const PUBLIC_ONLY = new Set([
-  'index',
+/** Public auth forms — signed-out users may stay here. */
+const PUBLIC_AUTH = new Set([
   'login',
   'register',
   'forgot-password',
@@ -24,8 +24,10 @@ const PUBLIC_ONLY = new Set([
  * Pure navigation policy for auth gating (unit-tested).
  * Returns a replace target, or null to stay.
  *
- * `join` and `invite` are intentionally not public-only: signed-in users may stay on those
+ * `join` and `invite` are intentionally not public-auth: signed-in users may stay on those
  * screens, and signed-out users are not kicked away from them.
+ * `/` (index) is the public welcome screen for signed-out visitors only; signed-in users are
+ * sent to the app. Public Explore (`explore-vendors`) is open to everyone.
  */
 export function resolveAuthRedirect(input: AuthRedirectInput): AuthRedirectTarget {
   if (input.isLoading) return null;
@@ -33,14 +35,25 @@ export function resolveAuthRedirect(input: AuthRedirectInput): AuthRedirectTarge
   const root = input.rootSegment;
   const inApp = root === '(app)';
   const inTabs = root === '(tabs)';
-  const onPublicOnly = !root || PUBLIC_ONLY.has(root);
+  const onPublicAuth = Boolean(root && PUBLIC_AUTH.has(root));
+  const onMarketingIndex = !root || root === 'index';
+  const onDevTools = root === 'dev';
   const pending = input.pendingJoinToken?.trim() || null;
 
-  if (!input.hasSession && (inApp || inTabs)) {
-    return '/';
+  if (!input.hasSession) {
+    if (inApp || inTabs) {
+      return '/login';
+    }
+    return null;
   }
 
-  if (input.hasSession && onPublicOnly && !input.isPasswordRecovery) {
+  // Allow temporary local testing screens to finish their own navigation.
+  if (onDevTools) return null;
+
+  if (
+    (onPublicAuth || onMarketingIndex) &&
+    !input.isPasswordRecovery
+  ) {
     if (pending) return `/join/${pending}`;
     return '/(app)';
   }

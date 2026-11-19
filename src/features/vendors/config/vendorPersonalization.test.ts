@@ -42,23 +42,15 @@ function category(id: string, slug = id): CategoryRef {
 function vendor(id: string, categorySlugs: string[]): VendorListItem {
   return {
     id,
-    owner_user_id: 'owner',
     business_name: id,
     slug: id,
     description: null,
-    phone: null,
-    email: null,
     website_url: null,
     instagram_url: null,
     city: null,
     country_code: 'ET',
-    address: null,
     logo_url: null,
     cover_url: null,
-    verification_status: 'verified',
-    listing_status: 'published',
-    created_at: '',
-    updated_at: '',
     categories: categorySlugs.map((slug) => category(slug)),
     startingPrice: null,
   };

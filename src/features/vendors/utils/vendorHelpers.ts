@@ -58,7 +58,7 @@ export function resolveMediaUrl(path: string | null | undefined): string | null 
 export function vendorCoverUrl(vendor: {
   cover_url: string | null;
   logo_url: string | null;
-  media?: VendorMedia[];
+  media?: Pick<VendorMedia, 'media_type' | 'sort_order' | 'storage_path'>[];
 }): string | null {
   const cover = resolveMediaUrl(vendor.cover_url);
   if (cover) return cover;

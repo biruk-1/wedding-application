@@ -68,8 +68,11 @@ export function mapTeamError(error: ErrorLike, fallback?: string): TeamUserMessa
   if (message.includes('different email address')) {
     return {
       code: 'wrong_account',
-      message: 'This invite was sent to a different email address. Sign in with that account.',
+      message: 'This invite was sent to a different email address. Use that email to continue.',
     };
+  }
+  if (message.includes('enter a valid email address')) {
+    return { code: 'validation', message: 'Enter a valid email address.' };
   }
   if (message.includes('confirm your email')) {
     return {

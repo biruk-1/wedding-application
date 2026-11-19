@@ -76,8 +76,11 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
         <Stack.Screen name="register" />
         <Stack.Screen name="forgot-password" />
         <Stack.Screen name="reset-password" />
+        <Stack.Screen name="explore-vendors/index" />
+        <Stack.Screen name="explore-vendors/[vendorId]" />
         <Stack.Screen name="invite/[token]" options={{ animation: 'fade' }} />
         <Stack.Screen name="join/[token]" options={{ animation: 'fade' }} />
+        <Stack.Screen name="dev/collab-login" options={{ animation: 'fade' }} />
         <Stack.Screen name="(app)" options={{ headerShown: false, animation: 'fade' }} />
         {/* Legacy Expo template routes — auth gate sends signed-in users to /(app), not here */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

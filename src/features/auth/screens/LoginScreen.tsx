@@ -17,6 +17,7 @@ import {
   loginSchema,
 } from '@/features/auth/validation/authSchemas';
 import { loadPendingTeamInvite } from '@/features/team/services/pendingTeamInvite';
+import { peekPendingVendorAction } from '@/features/vendors/services/pendingVendorAction';
 import { spacing } from '@/theme/spacing';
 
 export function LoginScreen() {
@@ -29,6 +30,7 @@ export function LoginScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hint = typeof emailHint === 'string' ? emailHint : null;
+  const vendorAction = peekPendingVendorAction();
 
   async function onSubmit() {
     setFormError(null);
@@ -53,8 +55,18 @@ export function LoginScreen() {
   return (
     <Screen scroll>
       <StatusBar style="dark" />
-      <Header title="Welcome back" subtitle="Sign in to continue planning" showBack />
+      <Header
+        title="Welcome back"
+        subtitle="Sign in to continue planning"
+        showBack={router.canGoBack()}
+      />
       <View style={styles.form}>
+        {vendorAction ? (
+          <AppText variant="caption" color="textMuted">
+            {vendorAction.kind === 'save' ? 'Sign in to save' : 'Sign in to contact'}{' '}
+            {vendorAction.vendorName || 'this vendor'}.
+          </AppText>
+        ) : null}
         {hint ? (
           <AppText variant="caption" color="textMuted">
             Use the account invited as {hint}

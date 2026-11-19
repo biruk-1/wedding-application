@@ -9,18 +9,28 @@ export type CategoryProgressRow = {
   completed: number;
 };
 
-export type ChecklistTab = 'all' | 'todo' | 'done';
+export type ChecklistTab = 'all' | 'todo' | 'done' | 'mine';
 
-export function countByChecklistTab(tasks: TaskWithRelations[]) {
+export function countByChecklistTab(tasks: TaskWithRelations[], currentUserId?: string | null) {
   const active = tasks.filter((t) => t.status !== 'cancelled');
   const done = active.filter((t) => t.status === 'done').length;
-  return { all: active.length, todo: active.length - done, done };
+  const mine = currentUserId
+    ? active.filter((t) => t.assignees.some((a) => a.user_id === currentUserId)).length
+    : 0;
+  return { all: active.length, todo: active.length - done, done, mine };
 }
 
-function matchesTab(task: TaskWithRelations, tab: ChecklistTab): boolean {
+function matchesTab(
+  task: TaskWithRelations,
+  tab: ChecklistTab,
+  currentUserId?: string | null,
+): boolean {
   if (task.status === 'cancelled') return false;
   if (tab === 'todo') return task.status !== 'done';
   if (tab === 'done') return task.status === 'done';
+  if (tab === 'mine') {
+    return Boolean(currentUserId && task.assignees.some((a) => a.user_id === currentUserId));
+  }
   return true;
 }
 
@@ -32,6 +42,7 @@ export function buildCategoryProgress(
   categories: TaskCategory[],
   tasks: TaskWithRelations[],
   tab: ChecklistTab = 'all',
+  currentUserId?: string | null,
 ): CategoryProgressRow[] {
   const sorted = [...categories]
     .filter((c) => c.is_active)
@@ -55,7 +66,7 @@ export function buildCategoryProgress(
   for (const category of sorted) {
     const inCategory = active.filter((t) => t.category_id === category.id);
     if (inCategory.length === 0) continue;
-    if (!inCategory.some((t) => matchesTab(t, tab))) continue;
+    if (!inCategory.some((t) => matchesTab(t, tab, currentUserId))) continue;
     rows.push({
       id: category.id,
       name: category.name_en,
@@ -67,7 +78,7 @@ export function buildCategoryProgress(
   }
 
   const uncategorized = active.filter((t) => !t.category_id);
-  if (uncategorized.length > 0 && uncategorized.some((t) => matchesTab(t, tab))) {
+  if (uncategorized.length > 0 && uncategorized.some((t) => matchesTab(t, tab, currentUserId))) {
     rows.push({
       id: '__none__',
       name: 'Other',

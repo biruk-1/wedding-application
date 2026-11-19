@@ -50,7 +50,14 @@ export function VendorCard({
       accessibilityLabel={`${vendor.business_name}. View profile`}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
       {cover ? (
-        <Image source={{ uri: cover }} style={styles.thumb} contentFit="cover" transition={200} />
+        <Image
+          source={{ uri: cover }}
+          style={styles.thumb}
+          contentFit="cover"
+          transition={200}
+          cachePolicy="memory-disk"
+          recyclingKey={vendor.id}
+        />
       ) : (
         <View style={[styles.thumb, styles.thumbFallback]}>
           <Ionicons name="storefront-outline" size={22} color={colors.textSubtle} />
@@ -71,6 +78,14 @@ export function VendorCard({
         <AppText variant="caption" color={price ? 'text' : 'textSubtle'} numberOfLines={1}>
           {price ?? 'Pricing on request'}
         </AppText>
+        {vendor.rating ? (
+          <View style={styles.rating}>
+            <Ionicons name="star" size={12} color={colors.accent} />
+            <AppText variant="caption" numberOfLines={1}>
+              {vendor.rating.average.toFixed(1)} ({vendor.rating.count})
+            </AppText>
+          </View>
+        ) : null}
       </View>
       <View style={styles.cta}>
         <AppText variant="caption" style={[styles.ctaLabel, { color: ctaColor }]}>
@@ -115,6 +130,11 @@ function createStyles(colors: AppColors, decorations: ThemeDecorations, softShad
     flex: 1,
     gap: 2,
     minWidth: 0,
+  },
+  rating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   cta: {
     flexDirection: 'row',

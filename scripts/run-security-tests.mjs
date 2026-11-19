@@ -11,6 +11,8 @@ const sqlFiles = [
   'planning_team_invites.sql',
   'planning_team_permissions.sql',
   'planning_team_guests.sql',
+  'planning_team_tasks.sql',
+  'planning_team_integration.sql',
 ].map((name) => path.join(root, 'supabase', 'tests', name));
 const dbUrl =
   process.env.SUPABASE_DB_URL ||

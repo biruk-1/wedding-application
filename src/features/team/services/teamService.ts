@@ -4,6 +4,9 @@ import type {
   CoordinatedGroup,
   CreateTeamInviteInput,
   CreatedTeamInvite,
+  GroupCoordinator,
+  MyPendingTeamInvite,
+  TeamActivityItem,
   TeamInviteKind,
   TeamInviteListItem,
   TeamInvitePreview,
@@ -335,6 +338,30 @@ export async function getTeamInvitePreview(
   return { ok: true, data: preview };
 }
 
+/**
+ * Confirms the typed email matches a pending invite token before sending Auth OTP.
+ * Does not accept the invite and does not reveal whether the email already has an account.
+ */
+export async function validateTeamInviteEmail(
+  rawToken: string,
+  email: string,
+): Promise<TeamResult<{ weddingTitle: string; inviterName: string }>> {
+  const { data, error } = await supabase.rpc('validate_team_invite_email', {
+    p_raw_token: rawToken,
+    p_email: email.trim(),
+  });
+  if (error) return fail(error);
+  if (!data || typeof data !== 'object') return fail(new Error('invalid invite token'));
+  const row = data as Record<string, unknown>;
+  return {
+    ok: true,
+    data: {
+      weddingTitle: typeof row.wedding_title === 'string' ? row.wedding_title : 'A celebration',
+      inviterName: typeof row.inviter_name === 'string' ? row.inviter_name : 'Someone',
+    },
+  };
+}
+
 export async function acceptTeamInvite(
   rawToken: string,
 ): Promise<TeamResult<{ weddingId: string; role: WeddingMemberRole; userId: string }>> {
@@ -354,5 +381,185 @@ export async function acceptTeamInvite(
       role: row.role as WeddingMemberRole,
       userId: row.user_id,
     },
+  };
+}
+
+function parseMyPendingInvite(raw: unknown): MyPendingTeamInvite | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as Record<string, unknown>;
+  if (typeof row.id !== 'string' || typeof row.wedding_id !== 'string') return null;
+  return {
+    id: row.id,
+    wedding_id: row.wedding_id,
+    wedding_title: typeof row.wedding_title === 'string' ? row.wedding_title : 'A celebration',
+    role: (typeof row.role === 'string' ? row.role : 'collaborator') as WeddingMemberRole,
+    invite_kind: asInviteKind(row.invite_kind),
+    status: asInviteStatus(row.status),
+    expires_at: typeof row.expires_at === 'string' ? row.expires_at : '',
+    created_at: typeof row.created_at === 'string' ? row.created_at : '',
+    inviter_name: typeof row.inviter_name === 'string' ? row.inviter_name : 'Someone',
+  };
+}
+
+/** Pending invites addressed to the signed-in user's email (any wedding). */
+export async function listMyPendingTeamInvites(): Promise<TeamResult<MyPendingTeamInvite[]>> {
+  const { data, error } = await supabase.rpc('list_my_pending_team_invites');
+  if (error) return fail(error);
+  if (!Array.isArray(data)) return { ok: true, data: [] };
+  return {
+    ok: true,
+    data: data
+      .map(parseMyPendingInvite)
+      .filter((item): item is MyPendingTeamInvite => item !== null),
+  };
+}
+
+/** Accept from the inbox (email must match; no deep-link token needed). */
+export async function acceptMyTeamInvite(
+  inviteId: string,
+): Promise<TeamResult<{ weddingId: string; role: WeddingMemberRole; userId: string }>> {
+  const { data, error } = await supabase.rpc('accept_my_team_invite', {
+    p_invite_id: inviteId,
+  });
+  if (error) return fail(error);
+  if (!data || typeof data !== 'object') return fail(new Error('No membership returned'));
+  const row = data as { wedding_id?: string; role?: string; user_id?: string };
+  if (!row.wedding_id || !row.role || !row.user_id) {
+    return fail(new Error('No membership returned'));
+  }
+  return {
+    ok: true,
+    data: {
+      weddingId: row.wedding_id,
+      role: row.role as WeddingMemberRole,
+      userId: row.user_id,
+    },
+  };
+}
+
+/** Grantable permissions currently held by a non-owner (owners hold everything implicitly). */
+export async function listMemberPermissions(
+  weddingId: string,
+  userId: string,
+): Promise<TeamResult<PermissionKey[]>> {
+  const { data, error } = await supabase
+    .from('wedding_member_permissions')
+    .select('permission')
+    .eq('wedding_id', weddingId)
+    .eq('user_id', userId);
+  if (error) return fail(error);
+  return {
+    ok: true,
+    data: (data ?? [])
+      .map((row) => row.permission)
+      .filter((key): key is PermissionKey => isPermissionKey(key)),
+  };
+}
+
+/** Default permissions for a role template (for invite preview / editor reset). */
+export async function listRoleTemplatePermissions(
+  template: string,
+): Promise<TeamResult<PermissionKey[]>> {
+  const { data, error } = await supabase
+    .from('wedding_role_templates')
+    .select('permission')
+    .eq('template', template);
+  if (error) return fail(error);
+  return {
+    ok: true,
+    data: (data ?? [])
+      .map((row) => row.permission)
+      .filter((key): key is PermissionKey => isPermissionKey(key)),
+  };
+}
+
+/** Coordinators for one group, or all groups in a wedding when groupId is omitted.
+ * Display names are filled by the caller from `list_team_members` (no profile FK on this table).
+ */
+export async function listGroupCoordinators(
+  weddingId: string,
+  groupId?: string,
+): Promise<TeamResult<GroupCoordinator[]>> {
+  let query = supabase
+    .from('guest_group_coordinators')
+    .select('group_id, user_id, can_delete, can_send_invitations, assigned_at')
+    .eq('wedding_id', weddingId)
+    .order('assigned_at', { ascending: true });
+  if (groupId) query = query.eq('group_id', groupId);
+
+  const { data, error } = await query;
+  if (error) return fail(error);
+
+  return {
+    ok: true,
+    data: (data ?? []).map((row) => ({
+      group_id: row.group_id,
+      user_id: row.user_id,
+      can_delete: row.can_delete,
+      can_send_invitations: row.can_send_invitations,
+      assigned_at: row.assigned_at,
+      display_name: 'Member',
+    })),
+  };
+}
+
+/** Groups a specific member coordinates. */
+export async function listMemberCoordinations(
+  weddingId: string,
+  userId: string,
+): Promise<TeamResult<GroupCoordinator[]>> {
+  const { data, error } = await supabase
+    .from('guest_group_coordinators')
+    .select('group_id, user_id, can_delete, can_send_invitations, assigned_at')
+    .eq('wedding_id', weddingId)
+    .eq('user_id', userId)
+    .order('assigned_at', { ascending: true });
+  if (error) return fail(error);
+  return {
+    ok: true,
+    data: (data ?? []).map((row) => ({
+      group_id: row.group_id,
+      user_id: row.user_id,
+      can_delete: row.can_delete,
+      can_send_invitations: row.can_send_invitations,
+      assigned_at: row.assigned_at,
+      display_name: 'Member',
+    })),
+  };
+}
+
+/** Wedding-wide activity feed (RLS filters by permission). */
+export async function listTeamActivity(
+  weddingId: string,
+  limit = 80,
+): Promise<TeamResult<TeamActivityItem[]>> {
+  const { data, error } = await supabase
+    .from('wedding_activity_log')
+    .select(
+      'id, action, actor_id, created_at, entity_type, entity_id, summary, required_permission, actor:profiles!wedding_activity_log_actor_id_fkey ( display_name )',
+    )
+    .eq('wedding_id', weddingId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) return fail(error);
+
+  return {
+    ok: true,
+    data: (data ?? []).map((row) => {
+      const actor = row.actor as { display_name: string } | { display_name: string }[] | null;
+      const resolved = Array.isArray(actor) ? actor[0] : actor;
+      return {
+        id: row.id,
+        action: row.action,
+        actor_id: row.actor_id,
+        actor_name: resolved?.display_name?.trim() || null,
+        entity_type: row.entity_type,
+        entity_id: row.entity_id,
+        created_at: row.created_at,
+        summary: (row.summary ?? {}) as Record<string, unknown>,
+        required_permission: row.required_permission,
+      };
+    }),
   };
 }

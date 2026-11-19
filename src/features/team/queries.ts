@@ -4,16 +4,27 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { GuestGroupCapability, PermissionKey } from '@/features/team/permissions';
 import { clearPendingTeamInvite } from '@/features/team/services/pendingTeamInvite';
 import {
+  acceptMyTeamInvite,
   acceptTeamInvite,
+  assignGroupCoordinator,
   createTeamInvite,
   getMyWeddingAccess,
   getTeamInvitePreview,
   leaveWedding,
+  listGroupCoordinators,
+  listMemberCoordinations,
+  listMemberPermissions,
+  listMyPendingTeamInvites,
+  listRoleTemplatePermissions,
+  listTeamActivity,
   listTeamInvites,
   listTeamMembers,
   removeMember,
   resendTeamInvite,
   revokeTeamInvite,
+  setMemberPermissions,
+  setMemberRoleTemplate,
+  unassignGroupCoordinator,
 } from '@/features/team/services/teamService';
 import type { CreateTeamInviteInput, WeddingAccess } from '@/features/team/types';
 import {
@@ -21,6 +32,7 @@ import {
   accessCanInGroup,
   legacyCanWrite,
 } from '@/features/team/utils/teamAccess';
+import type { WeddingMemberRole } from '@/features/weddings/types';
 import { unwrap } from '@/lib/query/queryError';
 import { queryKeys, staleTimes } from '@/lib/query/queryKeys';
 
@@ -82,6 +94,8 @@ export function useRemoveMember(weddingId: string | undefined) {
       void queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(userId, weddingId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.weddingMembers(userId, weddingId) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.myAccess(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.groupCoordinators(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
     },
   });
 }
@@ -133,6 +147,7 @@ export function useCreateTeamInvite(weddingId: string | undefined) {
     onSuccess: () => {
       if (!userId || !weddingId) return;
       void queryClient.invalidateQueries({ queryKey: queryKeys.teamInvites(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
     },
   });
 }
@@ -170,6 +185,7 @@ export function useAcceptTeamInvite() {
       await clearPendingTeamInvite();
       if (!userId) return;
       void queryClient.invalidateQueries({ queryKey: queryKeys.memberships(userId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myPendingTeamInvites(userId) });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.teamMembers(userId, membership.weddingId),
       });
@@ -177,5 +193,190 @@ export function useAcceptTeamInvite() {
         queryKey: queryKeys.myAccess(userId, membership.weddingId),
       });
     },
+  });
+}
+
+export function useMyPendingTeamInvites() {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.myPendingTeamInvites(userId ?? ''),
+    queryFn: async () => unwrap(await listMyPendingTeamInvites()),
+    enabled: Boolean(userId),
+    staleTime: staleTimes.collaborative,
+  });
+}
+
+export function useAcceptMyTeamInvite() {
+  const userId = useTeamUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (inviteId: string) => unwrap(await acceptMyTeamInvite(inviteId)),
+    onSuccess: async (membership) => {
+      await clearPendingTeamInvite();
+      if (!userId) return;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.memberships(userId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myPendingTeamInvites(userId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.teamMembers(userId, membership.weddingId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.myAccess(userId, membership.weddingId),
+      });
+    },
+  });
+}
+
+export function useMemberPermissions(weddingId: string | undefined, memberUserId: string | undefined) {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.memberPermissions(userId ?? '', weddingId ?? '', memberUserId ?? ''),
+    queryFn: async () => unwrap(await listMemberPermissions(weddingId!, memberUserId!)),
+    enabled: Boolean(userId && weddingId && memberUserId),
+    staleTime: staleTimes.collaborative,
+  });
+}
+
+export function useRoleTemplatePermissions(template: string | undefined) {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.roleTemplatePermissions(userId ?? '', template ?? ''),
+    queryFn: async () => unwrap(await listRoleTemplatePermissions(template!)),
+    enabled: Boolean(userId && template),
+    staleTime: staleTimes.reference,
+  });
+}
+
+export function useSetMemberRoleTemplate(weddingId: string | undefined) {
+  const userId = useTeamUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      memberUserId: string;
+      template: WeddingMemberRole;
+      resetPermissions?: boolean;
+    }) => {
+      if (!weddingId) throw new Error('Wedding is required.');
+      return unwrap(
+        await setMemberRoleTemplate(
+          weddingId,
+          input.memberUserId,
+          input.template,
+          input.resetPermissions ?? true,
+        ),
+      );
+    },
+    onSuccess: (_data, input) => {
+      if (!userId || !weddingId) return;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(userId, weddingId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.memberPermissions(userId, weddingId, input.memberUserId),
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
+    },
+  });
+}
+
+export function useSetMemberPermissions(weddingId: string | undefined) {
+  const userId = useTeamUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { memberUserId: string; permissions: PermissionKey[] }) => {
+      if (!weddingId) throw new Error('Wedding is required.');
+      return unwrap(await setMemberPermissions(weddingId, input.memberUserId, input.permissions));
+    },
+    onSuccess: (_data, input) => {
+      if (!userId || !weddingId) return;
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.memberPermissions(userId, weddingId, input.memberUserId),
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
+    },
+  });
+}
+
+export function useGroupCoordinators(weddingId: string | undefined, groupId?: string) {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.groupCoordinators(userId ?? '', weddingId ?? '', groupId),
+    queryFn: async () => unwrap(await listGroupCoordinators(weddingId!, groupId)),
+    enabled: Boolean(userId && weddingId),
+    staleTime: staleTimes.collaborative,
+  });
+}
+
+export function useMemberCoordinations(weddingId: string | undefined, memberUserId: string | undefined) {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.memberCoordinations(userId ?? '', weddingId ?? '', memberUserId ?? ''),
+    queryFn: async () => unwrap(await listMemberCoordinations(weddingId!, memberUserId!)),
+    enabled: Boolean(userId && weddingId && memberUserId),
+    staleTime: staleTimes.collaborative,
+  });
+}
+
+export function useAssignGroupCoordinator(weddingId: string | undefined) {
+  const userId = useTeamUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      groupId: string;
+      memberUserId: string;
+      canDelete?: boolean;
+      canSendInvitations?: boolean;
+    }) => {
+      if (!weddingId) throw new Error('Wedding is required.');
+      return unwrap(
+        await assignGroupCoordinator(weddingId, input.groupId, input.memberUserId, {
+          canDelete: input.canDelete,
+          canSendInvitations: input.canSendInvitations,
+        }),
+      );
+    },
+    onSuccess: (_data, input) => {
+      if (!userId || !weddingId) return;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.groupCoordinators(userId, weddingId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.groupCoordinators(userId, weddingId, input.groupId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.memberCoordinations(userId, weddingId, input.memberUserId),
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myAccess(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
+    },
+  });
+}
+
+export function useUnassignGroupCoordinator(weddingId: string | undefined) {
+  const userId = useTeamUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { groupId: string; memberUserId: string }) => {
+      if (!weddingId) throw new Error('Wedding is required.');
+      return unwrap(await unassignGroupCoordinator(weddingId, input.groupId, input.memberUserId));
+    },
+    onSuccess: (_data, input) => {
+      if (!userId || !weddingId) return;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.groupCoordinators(userId, weddingId) });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.groupCoordinators(userId, weddingId, input.groupId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.memberCoordinations(userId, weddingId, input.memberUserId),
+      });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.myAccess(userId, weddingId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.teamActivity(userId, weddingId) });
+    },
+  });
+}
+
+export function useTeamActivity(weddingId: string | undefined) {
+  const userId = useTeamUserId();
+  return useQuery({
+    queryKey: queryKeys.teamActivity(userId ?? '', weddingId ?? ''),
+    queryFn: async () => unwrap(await listTeamActivity(weddingId!)),
+    enabled: Boolean(userId && weddingId),
+    staleTime: staleTimes.collaborative,
   });
 }

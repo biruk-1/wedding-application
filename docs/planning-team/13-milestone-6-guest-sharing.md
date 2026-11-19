@@ -49,5 +49,5 @@ Coordinator management UI on member detail remains Milestone 8.
 ## 4. Still deferred
 
 - Full coordinator management screens (Milestone 8).
-- Task assignee collaboration (Milestone 7).
+- Task assignee collaboration — done in Milestone 7 (doc 14).
 - Production apply — local only until explicitly approved.

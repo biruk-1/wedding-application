@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/layout/Header';
 import { Screen } from '@/components/layout/Screen';
@@ -12,42 +12,76 @@ import { Card } from '@/components/ui/Card';
 import { TaskDetailSkeleton } from '@/components/skeletons/ScreenSkeletons';
 import { TextField } from '@/components/ui/TextField';
 import { AuthFormError } from '@/features/auth/components/AuthFormError';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import {
   addTaskComment,
   deleteTask,
+  deleteTaskComment,
   getWeddingTask,
+  listTaskActivity,
   listTaskComments,
   setTaskStatus,
+  type TaskActivityItem,
 } from '@/features/checklist/services/checklistService';
 import type { TaskWithRelations } from '@/features/checklist/types';
 import { commentSchema } from '@/features/checklist/validation/taskSchemas';
 import { isTaskOverdue, statusLabel } from '@/features/checklist/utils/taskHelpers';
-import { useWeddingRole } from '@/features/weddings/queries';
+import { useWeddingAccess } from '@/features/team/queries';
 import { formatWeddingDateLabel } from '@/features/weddings/utils/countdown';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
-import { useColors } from '@/theme/WeddingThemeContext';
 import { useThemedStyles } from '@/theme/useThemedStyles';
 
 type CommentRow = {
   id: string;
   body: string;
   created_at: string;
+  author_id: string;
   author: { display_name: string } | null;
 };
+
+function activityLabel(item: TaskActivityItem): string {
+  switch (item.action) {
+    case 'task.created':
+      return 'created this task';
+    case 'task.updated':
+      return 'updated this task';
+    case 'task.assignees_set':
+      return 'changed assignees';
+    case 'task.comment_added':
+      return 'added a comment';
+    case 'task.comment_deleted':
+      return 'removed a comment';
+    case 'task.deleted':
+      return 'deleted this task';
+    default:
+      return item.action;
+  }
+}
 
 export function TaskDetailScreen() {
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
+  const { user } = useAuth();
   const { weddingId, taskId } = useLocalSearchParams<{ weddingId: string; taskId: string }>();
-  const { canWrite, isLoading: roleLoading } = useWeddingRole(weddingId);
+  const { can, isOwner, isLoading: roleLoading } = useWeddingAccess(weddingId);
   const [task, setTask] = useState<TaskWithRelations | null>(null);
   const [comments, setComments] = useState<CommentRow[]>([]);
+  const [activity, setActivity] = useState<TaskActivityItem[]>([]);
   const [commentBody, setCommentBody] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
+
+  const isAssignee = useMemo(
+    () => Boolean(user?.id && task?.assignees.some((a) => a.user_id === user.id)),
+    [task, user],
+  );
+  const canToggleStatus = can('tasks.update') || isAssignee;
+  const canComment = can('tasks.comment') || isAssignee;
+  const canEdit = can('tasks.update');
+  const canDelete = can('tasks.delete');
 
   useEffect(() => {
     if (!taskId || !weddingId) return;
@@ -55,9 +89,10 @@ export function TaskDetailScreen() {
     let cancelled = false;
 
     void (async () => {
-      const [taskResult, commentsResult] = await Promise.all([
+      const [taskResult, commentsResult, activityResult] = await Promise.all([
         getWeddingTask(taskId),
         listTaskComments(taskId),
+        listTaskActivity(weddingId, taskId),
       ]);
 
       if (cancelled) return;
@@ -75,9 +110,13 @@ export function TaskDetailScreen() {
             id: row.id,
             body: row.body,
             created_at: row.created_at,
+            author_id: row.author_id,
             author: row.author,
           })),
         );
+      }
+      if (activityResult.ok) {
+        setActivity(activityResult.data);
       }
       setIsLoading(false);
     })();
@@ -88,7 +127,7 @@ export function TaskDetailScreen() {
   }, [taskId, weddingId, reloadToken]);
 
   async function onToggleDone() {
-    if (!task || !canWrite) return;
+    if (!task || !canToggleStatus) return;
     setBusy(true);
     const next = task.status === 'done' ? 'todo' : 'done';
     const result = await setTaskStatus(task.id, next);
@@ -98,10 +137,11 @@ export function TaskDetailScreen() {
       return;
     }
     setTask(result.data);
+    setReloadToken((value) => value + 1);
   }
 
   async function onDelete() {
-    if (!task || !canWrite || !weddingId) return;
+    if (!task || !canDelete || !weddingId) return;
     Alert.alert('Delete task?', 'This cannot be undone.', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -124,7 +164,7 @@ export function TaskDetailScreen() {
   }
 
   async function onAddComment() {
-    if (!taskId || !canWrite) return;
+    if (!taskId || !canComment) return;
     const parsed = commentSchema.safeParse({ body: commentBody });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Invalid comment');
@@ -138,6 +178,17 @@ export function TaskDetailScreen() {
       return;
     }
     setCommentBody('');
+    setReloadToken((value) => value + 1);
+  }
+
+  async function onDeleteComment(commentId: string) {
+    setBusy(true);
+    const result = await deleteTaskComment(commentId);
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.error.message);
+      return;
+    }
     setReloadToken((value) => value + 1);
   }
 
@@ -202,13 +253,15 @@ export function TaskDetailScreen() {
 
       <AuthFormError message={error} />
 
-      {canWrite ? (
-        <View style={styles.actions}>
+      <View style={styles.actions}>
+        {canToggleStatus ? (
           <Button
             label={task.status === 'done' ? 'Reopen task' : 'Mark complete'}
             loading={busy}
             onPress={() => void onToggleDone()}
           />
+        ) : null}
+        {canEdit ? (
           <Button
             label="Edit task"
             variant="secondary"
@@ -216,9 +269,11 @@ export function TaskDetailScreen() {
               router.push(`/(app)/weddings/${weddingId}/checklist/${task.id}/edit` as Href)
             }
           />
+        ) : null}
+        {canDelete ? (
           <Button label="Delete task" variant="danger" onPress={onDelete} disabled={busy} />
-        </View>
-      ) : null}
+        ) : null}
+      </View>
 
       <Card style={styles.card}>
         <AppText variant="label">Comments</AppText>
@@ -227,73 +282,117 @@ export function TaskDetailScreen() {
             No comments yet.
           </AppText>
         ) : (
-          comments.map((comment) => (
-            <View key={comment.id} style={styles.comment}>
-              <AppText variant="caption" color="textMuted">
-                {comment.author?.display_name || 'Member'}
-              </AppText>
-              <AppText variant="body">{comment.body}</AppText>
-            </View>
-          ))
+          comments.map((comment) => {
+            const canRemove = comment.author_id === user?.id || isOwner;
+            return (
+              <View key={comment.id} style={styles.comment}>
+                <View style={styles.commentHeader}>
+                  <AppText variant="caption" color="textMuted">
+                    {comment.author?.display_name || 'Member'}
+                  </AppText>
+                  {canRemove ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete comment"
+                      disabled={busy}
+                      onPress={() => void onDeleteComment(comment.id)}>
+                      <AppText variant="caption" color="danger">
+                        Delete
+                      </AppText>
+                    </Pressable>
+                  ) : null}
+                </View>
+                <AppText variant="body">{comment.body}</AppText>
+              </View>
+            );
+          })
         )}
-        {canWrite ? (
+        {canComment ? (
           <>
             <TextField
               label="Add a comment"
               value={commentBody}
               onChangeText={setCommentBody}
               editable={!busy}
+              multiline
             />
             <Button label="Post comment" loading={busy} onPress={() => void onAddComment()} />
           </>
         ) : null}
+      </Card>
+
+      <Card style={styles.card}>
+        <AppText variant="label">Activity</AppText>
+        {activity.length === 0 ? (
+          <AppText variant="caption" color="textMuted">
+            No activity yet.
+          </AppText>
+        ) : (
+          activity.map((item) => (
+            <View key={item.id} style={styles.activityRow}>
+              <AppText variant="caption" color="textMuted">
+                {item.actor_name || 'Someone'} {activityLabel(item)}
+                {item.created_at
+                  ? ` · ${formatWeddingDateLabel(item.created_at.slice(0, 10)) ?? ''}`
+                  : ''}
+              </AppText>
+            </View>
+          ))
+        )}
       </Card>
     </Screen>
   );
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  const colors = useColors();
   const styles = useThemedStyles(createStyles);
-
   return (
     <View style={styles.detail}>
       <AppText variant="caption" color="textMuted">
         {label}
       </AppText>
-      <AppText variant="bodyMedium" style={{ color: colors.text }}>
-        {value}
-      </AppText>
+      <AppText variant="body">{value}</AppText>
     </View>
   );
 }
 
 function createStyles(colors: AppColors) {
   return StyleSheet.create({
-  card: {
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  badges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  detail: {
-    gap: spacing.xxs,
-  },
-  actions: {
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  comment: {
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  center: {
-    textAlign: 'center',
-  },
+    card: {
+      gap: spacing.md,
+      marginBottom: spacing.xl,
+    },
+    badges: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    detail: {
+      gap: spacing.xxs,
+    },
+    actions: {
+      gap: spacing.md,
+      marginBottom: spacing.xl,
+    },
+    comment: {
+      gap: spacing.xxs,
+      paddingVertical: spacing.sm,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    commentHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.sm,
+    },
+    activityRow: {
+      paddingVertical: spacing.xs,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    center: {
+      textAlign: 'center',
+      marginBottom: spacing.md,
+    },
   });
 }

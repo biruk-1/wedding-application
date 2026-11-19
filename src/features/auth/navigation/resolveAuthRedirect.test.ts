@@ -14,7 +14,7 @@ describe('resolveAuthRedirect', () => {
     ).toBeNull();
   });
 
-  it('sends unauthenticated users away from protected routes', () => {
+  it('sends unauthenticated users from protected routes to sign-in', () => {
     expect(
       resolveAuthRedirect({
         isLoading: false,
@@ -22,7 +22,70 @@ describe('resolveAuthRedirect', () => {
         isPasswordRecovery: false,
         rootSegment: '(app)',
       }),
-    ).toBe('/');
+    ).toBe('/login');
+  });
+
+  it('keeps signed-out visitors on the public welcome screen', () => {
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: false,
+        isPasswordRecovery: false,
+        rootSegment: 'index',
+      }),
+    ).toBeNull();
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: false,
+        isPasswordRecovery: false,
+        rootSegment: undefined,
+      }),
+    ).toBeNull();
+  });
+
+  it('never shows the welcome screen to signed-in users', () => {
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: true,
+        isPasswordRecovery: false,
+        rootSegment: undefined,
+      }),
+    ).toBe('/(app)');
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: true,
+        isPasswordRecovery: false,
+        rootSegment: 'index',
+        pendingJoinToken: 'abc123',
+      }),
+    ).toBe('/join/abc123');
+  });
+
+  it('keeps public Explore open signed out and signed in', () => {
+    for (const hasSession of [false, true]) {
+      expect(
+        resolveAuthRedirect({
+          isLoading: false,
+          hasSession,
+          isPasswordRecovery: false,
+          rootSegment: 'explore-vendors',
+        }),
+      ).toBeNull();
+    }
+  });
+
+  it('still protects the legacy tabs group when signed out', () => {
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: false,
+        isPasswordRecovery: false,
+        rootSegment: '(tabs)',
+      }),
+    ).toBe('/login');
   });
 
   it('keeps reset-password public when signed out', () => {
@@ -79,6 +142,17 @@ describe('resolveAuthRedirect', () => {
     ).toBeNull();
   });
 
+  it('leaves temporary dev tools alone so they can navigate after sign-in', () => {
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: true,
+        isPasswordRecovery: false,
+        rootSegment: 'dev',
+      }),
+    ).toBeNull();
+  });
+
   it('allows reset-password during recovery without bouncing to app home', () => {
     expect(
       resolveAuthRedirect({
@@ -90,13 +164,21 @@ describe('resolveAuthRedirect', () => {
     ).toBeNull();
   });
 
-  it('leaves public routes alone when signed out', () => {
+  it('leaves public auth routes alone when signed out', () => {
     expect(
       resolveAuthRedirect({
         isLoading: false,
         hasSession: false,
         isPasswordRecovery: false,
         rootSegment: 'register',
+      }),
+    ).toBeNull();
+    expect(
+      resolveAuthRedirect({
+        isLoading: false,
+        hasSession: false,
+        isPasswordRecovery: false,
+        rootSegment: 'login',
       }),
     ).toBeNull();
   });

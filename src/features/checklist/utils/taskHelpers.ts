@@ -36,6 +36,8 @@ export function filterTasks(
     status: StatusFilter;
     categoryId?: string | null;
     query?: string;
+    /** When set with status assigned_to_me, keep tasks assigned to this user. */
+    currentUserId?: string | null;
   },
 ): TaskWithRelations[] {
   const q = options.query?.trim().toLowerCase() ?? '';
@@ -54,10 +56,27 @@ export function filterTasks(
         return task.status === 'done';
       case 'overdue':
         return isTaskOverdue(task);
+      case 'assigned_to_me':
+        if (task.status === 'cancelled') return false;
+        if (!options.currentUserId) return false;
+        return task.assignees.some((assignee) => assignee.user_id === options.currentUserId);
       default:
         return true;
     }
   });
+}
+
+export function tasksAssignedToUser(
+  tasks: TaskWithRelations[],
+  userId: string | null | undefined,
+): TaskWithRelations[] {
+  if (!userId) return [];
+  return tasks.filter(
+    (task) =>
+      task.status !== 'done'
+      && task.status !== 'cancelled'
+      && task.assignees.some((assignee) => assignee.user_id === userId),
+  );
 }
 
 export function statusLabel(status: string): string {

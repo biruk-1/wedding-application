@@ -58,7 +58,7 @@ describe('countByChecklistTab', () => {
       task({ id: '3', title: 'C', status: 'in_progress' }),
       task({ id: '4', title: 'D', status: 'cancelled' }),
     ];
-    expect(countByChecklistTab(tasks)).toEqual({ all: 3, todo: 2, done: 1 });
+    expect(countByChecklistTab(tasks)).toEqual({ all: 3, todo: 2, done: 1, mine: 0 });
   });
 });
 

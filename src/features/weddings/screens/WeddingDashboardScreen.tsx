@@ -15,9 +15,14 @@ import { RefreshNotice } from '@/components/ui/RefreshNotice';
 import { formatMoney } from '@/features/budget/utils/money';
 import { useBudgetDashboard } from '@/features/budget/queries';
 import { useToggleTaskStatus, useWeddingTasks } from '@/features/checklist/queries';
-import { computeChecklistProgress } from '@/features/checklist/utils/taskHelpers';
+import {
+  computeChecklistProgress,
+  tasksAssignedToUser,
+} from '@/features/checklist/utils/taskHelpers';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useGuestSummaries, useInvitations } from '@/features/guests/queries';
 import { summarizeInvitations } from '@/features/guests/utils/guestHelpers';
+import { useWeddingAccess } from '@/features/team/queries';
 import { getCelebrationCopy } from '@/features/weddings/celebrationCopy';
 import { DashboardHero } from '@/features/weddings/components/DashboardHero';
 import { DashboardHomeHeader } from '@/features/weddings/components/DashboardHomeHeader';
@@ -27,7 +32,7 @@ import {
 } from '@/features/weddings/components/FeatureShortcutGrid';
 import { UpcomingTaskCard } from '@/features/weddings/components/UpcomingTaskCard';
 import { WeddingProgressCard } from '@/features/weddings/components/WeddingProgressCard';
-import { useUploadWeddingCover, useWedding, useWeddingRole } from '@/features/weddings/queries';
+import { useUploadWeddingCover, useWedding } from '@/features/weddings/queries';
 import { useSavedVendorCount } from '@/features/weddings/queries/useSavedVendorCount';
 import { getCountdownParts } from '@/features/weddings/utils/countdown';
 import { markMilestone } from '@/lib/perf';
@@ -36,11 +41,12 @@ import { spacing } from '@/theme/spacing';
 
 export function WeddingDashboardScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { weddingId } = useLocalSearchParams<{ weddingId: string }>();
   const insets = useSafeAreaInsets();
   const weddingQuery = useWedding(weddingId);
   const wedding = weddingQuery.data;
-  const { canWrite } = useWeddingRole(weddingId);
+  const { canWrite, can, isOwner, access } = useWeddingAccess(weddingId);
   const coverUpload = useUploadWeddingCover(weddingId);
   const tasksQuery = useWeddingTasks(weddingId);
   const budgetQuery = useBudgetDashboard(weddingId);
@@ -97,13 +103,12 @@ export function WeddingDashboardScreen() {
   );
   const countdown = useMemo(
     () => (weddingQuery.data?.wedding_date ? getCountdownParts(weddingQuery.data.wedding_date) : null),
-    [weddingQuery.data?.wedding_date],
+    [weddingQuery.data],
   );
 
-  const upcomingTasks = useMemo(() => {
-    const tasks = tasksQuery.data ?? [];
-    return [...tasks]
-      .filter((t) => t.status !== 'done' && t.status !== 'cancelled')
+  const yourTasks = useMemo(() => {
+    const assigned = tasksAssignedToUser(tasksQuery.data ?? [], user?.id);
+    return [...assigned]
       .sort((a, b) => {
         const ap = a.priority === 'urgent' || a.priority === 'high' ? 0 : 1;
         const bp = b.priority === 'urgent' || b.priority === 'high' ? 0 : 1;
@@ -114,7 +119,16 @@ export function WeddingDashboardScreen() {
         return a.title.localeCompare(b.title);
       })
       .slice(0, 3);
-  }, [tasksQuery.data]);
+  }, [tasksQuery.data, user]);
+
+  const canToggleTask = useCallback(
+    (taskId: string) => {
+      if (can('tasks.update')) return true;
+      const task = (tasksQuery.data ?? []).find((row) => row.id === taskId);
+      return Boolean(user?.id && task?.assignees.some((a) => a.user_id === user.id));
+    },
+    [can, tasksQuery.data, user],
+  );
 
   const inviteStats = useMemo(
     () => summarizeInvitations(invitationsQuery.data ?? []),
@@ -174,6 +188,17 @@ export function WeddingDashboardScreen() {
 
   const copy = getCelebrationCopy(wedding.celebration_kind);
   const isWedding = copy.kind === 'wedding';
+  const canSeeTeam = isOwner || can('team.view');
+  const canSeeBudget = isOwner || can('budget.view');
+  const canSeeTimeline = isOwner || can('timeline.view');
+  const canSeeGuests =
+    isOwner ||
+    can('guests.view') ||
+    can('guests.manage_all') ||
+    (access?.coordinated_groups.length ?? 0) > 0;
+  const canSeeTasks = isOwner || can('tasks.view');
+  const canSendInvites = isOwner || can('guests.send_invitations');
+
   const shortcuts: FeatureShortcut[] = [
     {
       id: 'checklist',
@@ -182,7 +207,7 @@ export function WeddingDashboardScreen() {
       icon: 'checkbox-outline' as const,
       tone: 'green' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/checklist` as Href),
-      enabled: copy.capabilities.tasks,
+      enabled: copy.capabilities.tasks && canSeeTasks,
     },
     {
       id: 'vendors',
@@ -205,7 +230,7 @@ export function WeddingDashboardScreen() {
       icon: 'people-outline' as const,
       tone: 'green' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/guests` as Href),
-      enabled: copy.capabilities.guests,
+      enabled: copy.capabilities.guests && canSeeGuests,
     },
     {
       id: 'budget',
@@ -214,7 +239,7 @@ export function WeddingDashboardScreen() {
       icon: 'wallet-outline' as const,
       tone: 'gold' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/budget` as Href),
-      enabled: copy.capabilities.budget,
+      enabled: copy.capabilities.budget && canSeeBudget,
     },
     {
       id: 'invites',
@@ -223,7 +248,7 @@ export function WeddingDashboardScreen() {
       icon: 'mail-outline' as const,
       tone: 'wine' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/guests/invite` as Href),
-      enabled: copy.capabilities.invitations,
+      enabled: copy.capabilities.invitations && canSendInvites,
     },
     {
       id: 'timeline',
@@ -232,7 +257,16 @@ export function WeddingDashboardScreen() {
       icon: 'calendar-outline' as const,
       tone: 'green' as const,
       onPress: () => router.push(`/(app)/weddings/${wedding.id}/timeline` as Href),
-      enabled: copy.capabilities.timeline,
+      enabled: copy.capabilities.timeline && canSeeTimeline,
+    },
+    {
+      id: 'team',
+      label: 'Team',
+      sublabel: isOwner ? 'Invite' : 'Members',
+      icon: 'people-circle-outline' as const,
+      tone: 'wine' as const,
+      onPress: () => router.push(`/(app)/weddings/${wedding.id}/team` as Href),
+      enabled: canSeeTeam,
     },
   ].filter((shortcut) => shortcut.enabled);
 
@@ -275,7 +309,7 @@ export function WeddingDashboardScreen() {
           <View style={styles.section}>
             <View style={styles.sectionRow}>
               <AppText variant="label" color="heading">
-                Upcoming Tasks
+                Your tasks
               </AppText>
               <Pressable
                 accessibilityRole="button"
@@ -285,10 +319,10 @@ export function WeddingDashboardScreen() {
                 </AppText>
               </Pressable>
             </View>
-            {upcomingTasks.length === 0 ? (
+            {yourTasks.length === 0 ? (
               <Card style={styles.emptyCard}>
                 <AppText variant="body" color="textMuted">
-                  No open tasks yet. Open the checklist to get started.
+                  Nothing assigned to you yet. Open the checklist to see every task.
                 </AppText>
                 <Button
                   label="Open checklist"
@@ -297,11 +331,11 @@ export function WeddingDashboardScreen() {
               </Card>
             ) : (
               <View style={styles.taskList}>
-                {upcomingTasks.map((task) => (
+                {yourTasks.map((task) => (
                   <UpcomingTaskCard
                     key={task.id}
                     task={task}
-                    canWrite={canWrite}
+                    canWrite={canToggleTask(task.id)}
                     onOpen={(id) =>
                       router.push(`/(app)/weddings/${wedding.id}/checklist/${id}` as Href)
                     }

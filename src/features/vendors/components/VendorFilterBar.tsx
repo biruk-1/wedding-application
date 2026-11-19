@@ -25,6 +25,7 @@ export function VendorFilterBar({
   onReset,
   hasActiveFilters,
   hideSearch = false,
+  priceLabel = 'Starting price',
 }: {
   filters: VendorFilters;
   onChange: (next: VendorFilters) => void;
@@ -34,6 +35,7 @@ export function VendorFilterBar({
   hasActiveFilters: boolean;
   /** When true, omit the built-in search field (parent uses SearchField). */
   hideSearch?: boolean;
+  priceLabel?: string;
 }) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -126,7 +128,7 @@ export function VendorFilterBar({
       ) : null}
 
       <AppText variant="caption" color="textMuted">
-        Starting price
+        {priceLabel}
       </AppText>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         {PRICE_PRESETS.map((preset) => {

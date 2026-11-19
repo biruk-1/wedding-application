@@ -110,7 +110,12 @@ function CreateWeddingFlowContent({
 
   function goBack() {
     if (step === 0) {
-      router.back();
+      // Hub replace()-navigates here for new users; prefer selector over a dead back stack.
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(app)/weddings' as Href);
+      }
       return;
     }
     setFormError(null);

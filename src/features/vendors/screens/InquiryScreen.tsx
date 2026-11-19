@@ -29,9 +29,10 @@ export function InquiryScreen() {
   const colors = useColors();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
-  const { weddingId, vendorId } = useLocalSearchParams<{
+  const { weddingId, vendorId, serviceId: initialServiceId } = useLocalSearchParams<{
     weddingId: string;
     vendorId: string;
+    serviceId?: string;
   }>();
   const [vendorName, setVendorName] = useState('Vendor');
   const [services, setServices] = useState<{ id: string; title: string }[]>([]);
@@ -57,6 +58,9 @@ export function InquiryScreen() {
       if (profile.ok) {
         setVendorName(profile.data.business_name);
         setServices(profile.data.services.map((s) => ({ id: s.id, title: s.title })));
+        if (initialServiceId && profile.data.services.some((s) => s.id === initialServiceId)) {
+          setServiceId(initialServiceId);
+        }
       } else {
         setFormError(profile.error.message);
       }
@@ -66,7 +70,7 @@ export function InquiryScreen() {
     return () => {
       cancelled = true;
     };
-  }, [vendorId, weddingId]);
+  }, [vendorId, weddingId, initialServiceId]);
 
   async function onSubmit() {
     if (!weddingId || !vendorId || submitting || sent) return;

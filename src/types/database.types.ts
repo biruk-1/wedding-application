@@ -395,17 +395,23 @@ isOneToOne: false
                   ]
                 },"task_assignees": {
                   Row: {
-                    "assigned_at": string,"task_id": string,"user_id": string
+                    "assigned_at": string,"assigned_by": string | null,"task_id": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "assigned_at"?: string,"task_id": string,"user_id": string
+                    "assigned_at"?: string,"assigned_by"?: string | null,"task_id": string,"user_id": string
                   }
                   Update: {
-                    "assigned_at"?: string,"task_id"?: string,"user_id"?: string
+                    "assigned_at"?: string,"assigned_by"?: string | null,"task_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "task_assignees_assigned_by_fkey"
+      columns: ["assigned_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "task_assignees_task_id_fkey"
       columns: ["task_id"]
 isOneToOne: false
@@ -513,14 +519,14 @@ isOneToOne: false
                   ]
                 },"vendor_bookings": {
                   Row: {
-                    "booking_date": string | null,"contract_storage_path": string | null,"created_at": string,"currency_code": string,"deposit_amount": number | null,"end_at": string | null,"id": string,"notes": string | null,"quote_id": string | null,"start_at": string | null,"status": string,"total_amount": number | null,"wedding_vendor_id": string
+                    "booking_date": string | null,"contract_storage_path": string | null,"created_at": string,"currency_code": string,"deposit_amount": number | null,"end_at": string | null,"id": string,"notes": string | null,"quote_id": string | null,"start_at": string | null,"status": string,"total_amount": number | null,"updated_at": string | null,"wedding_vendor_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "booking_date"?: string | null,"contract_storage_path"?: string | null,"created_at"?: string,"currency_code"?: string,"deposit_amount"?: number | null,"end_at"?: string | null,"id"?: string,"notes"?: string | null,"quote_id"?: string | null,"start_at"?: string | null,"status"?: string,"total_amount"?: number | null,"wedding_vendor_id": string
+                    "booking_date"?: string | null,"contract_storage_path"?: string | null,"created_at"?: string,"currency_code"?: string,"deposit_amount"?: number | null,"end_at"?: string | null,"id"?: string,"notes"?: string | null,"quote_id"?: string | null,"start_at"?: string | null,"status"?: string,"total_amount"?: number | null,"updated_at"?: string | null,"wedding_vendor_id": string
                   }
                   Update: {
-                    "booking_date"?: string | null,"contract_storage_path"?: string | null,"created_at"?: string,"currency_code"?: string,"deposit_amount"?: number | null,"end_at"?: string | null,"id"?: string,"notes"?: string | null,"quote_id"?: string | null,"start_at"?: string | null,"status"?: string,"total_amount"?: number | null,"wedding_vendor_id"?: string
+                    "booking_date"?: string | null,"contract_storage_path"?: string | null,"created_at"?: string,"currency_code"?: string,"deposit_amount"?: number | null,"end_at"?: string | null,"id"?: string,"notes"?: string | null,"quote_id"?: string | null,"start_at"?: string | null,"status"?: string,"total_amount"?: number | null,"updated_at"?: string | null,"wedding_vendor_id"?: string
                   }
                   Relationships: [
                     {
@@ -579,14 +585,14 @@ isOneToOne: false
                   ]
                 },"vendor_inquiries": {
                   Row: {
-                    "created_at": string,"created_by": string,"id": string,"message": string | null,"proposed_budget": number | null,"requested_event_id": string | null,"service_id": string | null,"status": string,"vendor_id": string,"wedding_id": string
+                    "created_at": string,"created_by": string,"id": string,"message": string | null,"proposed_budget": number | null,"requested_event_id": string | null,"service_id": string | null,"status": string,"updated_at": string | null,"vendor_id": string,"wedding_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by": string,"id"?: string,"message"?: string | null,"proposed_budget"?: number | null,"requested_event_id"?: string | null,"service_id"?: string | null,"status"?: string,"vendor_id": string,"wedding_id": string
+                    "created_at"?: string,"created_by": string,"id"?: string,"message"?: string | null,"proposed_budget"?: number | null,"requested_event_id"?: string | null,"service_id"?: string | null,"status"?: string,"updated_at"?: string | null,"vendor_id": string,"wedding_id": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string,"id"?: string,"message"?: string | null,"proposed_budget"?: number | null,"requested_event_id"?: string | null,"service_id"?: string | null,"status"?: string,"vendor_id"?: string,"wedding_id"?: string
+                    "created_at"?: string,"created_by"?: string,"id"?: string,"message"?: string | null,"proposed_budget"?: number | null,"requested_event_id"?: string | null,"service_id"?: string | null,"status"?: string,"updated_at"?: string | null,"vendor_id"?: string,"wedding_id"?: string
                   }
                   Relationships: [
                     {
@@ -669,14 +675,14 @@ isOneToOne: false
                   ]
                 },"vendor_quotes": {
                   Row: {
-                    "amount": number,"created_at": string,"currency_code": string,"description": string | null,"id": string,"inquiry_id": string,"package_id": string | null,"status": string,"valid_until": string | null
+                    "amount": number,"created_at": string,"currency_code": string,"description": string | null,"id": string,"inquiry_id": string,"package_id": string | null,"status": string,"updated_at": string | null,"valid_until": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount": number,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"inquiry_id": string,"package_id"?: string | null,"status"?: string,"valid_until"?: string | null
+                    "amount": number,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"inquiry_id": string,"package_id"?: string | null,"status"?: string,"updated_at"?: string | null,"valid_until"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"inquiry_id"?: string,"package_id"?: string | null,"status"?: string,"valid_until"?: string | null
+                    "amount"?: number,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"inquiry_id"?: string,"package_id"?: string | null,"status"?: string,"updated_at"?: string | null,"valid_until"?: string | null
                   }
                   Relationships: [
                     {
@@ -727,14 +733,14 @@ isOneToOne: false
                   ]
                 },"vendor_services": {
                   Row: {
-                    "base_price": number | null,"category_id": string | null,"created_at": string,"currency_code": string,"description": string | null,"id": string,"is_active": boolean,"price_unit": string,"title": string,"vendor_id": string
+                    "base_price": number | null,"category_id": string | null,"created_at": string,"currency_code": string,"description": string | null,"id": string,"is_active": boolean,"price_unit": string,"title": string,"updated_at": string | null,"vendor_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "base_price"?: number | null,"category_id"?: string | null,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"price_unit"?: string,"title": string,"vendor_id": string
+                    "base_price"?: number | null,"category_id"?: string | null,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"price_unit"?: string,"title": string,"updated_at"?: string | null,"vendor_id": string
                   }
                   Update: {
-                    "base_price"?: number | null,"category_id"?: string | null,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"price_unit"?: string,"title"?: string,"vendor_id"?: string
+                    "base_price"?: number | null,"category_id"?: string | null,"created_at"?: string,"currency_code"?: string,"description"?: string | null,"id"?: string,"is_active"?: boolean,"price_unit"?: string,"title"?: string,"updated_at"?: string | null,"vendor_id"?: string
                   }
                   Relationships: [
                     {
@@ -1157,7 +1163,22 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "accept_team_invite":
+            "accept_my_team_invite":
+{ Args: { "p_invite_id": string }; Returns: {
+              "invited_by": string | null,
+"joined_at": string,
+"role": string,
+"updated_at": string,
+"user_id": string,
+"wedding_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "wedding_members"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"accept_team_invite":
 { Args: { "p_raw_token": string }; Returns: {
               "invited_by": string | null,
 "joined_at": string,
@@ -1172,6 +1193,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"accept_vendor_quote":
+{ Args: { "p_quote_id": string }; Returns: Json
+                           },
 "accept_wedding_invite":
 { Args: { "p_raw_token": string }; Returns: {
               "invited_by": string | null,
@@ -1213,6 +1237,33 @@ isOneToOne: false
               "expires_at": string,"invite_id": string,"raw_token": string
             }[]
                            },
+"create_vendor":
+{ Args: { "p_business_name": string,"p_category_ids": (string)[],"p_city"?: string,"p_description"?: string,"p_email"?: string,"p_phone"?: string }; Returns: {
+              "address": string | null,
+"business_name": string,
+"city": string | null,
+"country_code": string,
+"cover_url": string | null,
+"created_at": string,
+"description": string | null,
+"email": string | null,
+"id": string,
+"instagram_url": string | null,
+"listing_status": string,
+"logo_url": string | null,
+"owner_user_id": string,
+"phone": string | null,
+"slug": string,
+"updated_at": string,
+"verification_status": string,
+"website_url": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "vendors"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_wedding":
 { Args: { "p_budget_allocations"?: Json,"p_celebration_kind"?: string,"p_city"?: string,"p_country_code"?: string,"p_currency_code"?: string,"p_estimated_guest_count"?: number,"p_partner_one_name"?: string,"p_partner_two_name"?: string,"p_style"?: string,"p_timezone"?: string,"p_title": string,"p_total_budget"?: number,"p_wedding_date"?: string }; Returns: {
               "celebration_kind": string,
@@ -1277,6 +1328,9 @@ isOneToOne: false
 "leave_wedding":
 { Args: { "p_wedding_id": string }; Returns: undefined
                            },
+"list_my_pending_team_invites":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "list_team_invites":
 { Args: { "p_wedding_id": string }; Returns: Json
                            },
@@ -1318,6 +1372,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"set_task_assignees":
+{ Args: { "p_task_id": string,"p_user_ids"?: (string)[] }; Returns: Json
+                           },
 "set_wedding_member_role":
 { Args: { "p_role": string,"p_user_id": string,"p_wedding_id": string }; Returns: {
               "invited_by": string | null,
@@ -1344,6 +1401,33 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "guest_rsvps"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"submit_vendor_for_verification":
+{ Args: { "p_vendor_id": string }; Returns: {
+              "address": string | null,
+"business_name": string,
+"city": string | null,
+"country_code": string,
+"cover_url": string | null,
+"created_at": string,
+"description": string | null,
+"email": string | null,
+"id": string,
+"instagram_url": string | null,
+"listing_status": string,
+"logo_url": string | null,
+"owner_user_id": string,
+"phone": string | null,
+"slug": string,
+"updated_at": string,
+"verification_status": string,
+"website_url": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "vendors"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -1375,7 +1459,40 @@ isOneToOne: false
         to: "weddings"
         isOneToOne: true
         isSetofReturn: false
-      } }
+      } },
+"validate_team_invite_email":
+{ Args: { "p_email": string,"p_raw_token": string }; Returns: Json
+                           },
+"vendor_dashboard_summary":
+{ Args: { "p_vendor_id": string }; Returns: Json
+                           },
+"vendor_earnings_summary":
+{ Args: { "p_vendor_id": string }; Returns: Json
+                           },
+"vendor_get_booking":
+{ Args: { "p_booking_id": string }; Returns: Json
+                           },
+"vendor_get_inquiry":
+{ Args: { "p_inquiry_id": string }; Returns: Json
+                           },
+"vendor_list_bookings":
+{ Args: { "p_cursor_created_at"?: string,"p_cursor_id"?: string,"p_limit"?: number,"p_status"?: string,"p_vendor_id": string }; Returns: Json
+                           },
+"vendor_list_inquiries":
+{ Args: { "p_cursor_created_at"?: string,"p_cursor_id"?: string,"p_limit"?: number,"p_status"?: string,"p_vendor_id": string }; Returns: Json
+                           },
+"vendor_list_reviews":
+{ Args: { "p_cursor_created_at"?: string,"p_cursor_id"?: string,"p_limit"?: number,"p_status"?: string,"p_vendor_id": string }; Returns: Json
+                           },
+"vendor_respond_booking":
+{ Args: { "p_action": string,"p_booking_id": string,"p_note"?: string }; Returns: Json
+                           },
+"vendor_send_quote":
+{ Args: { "p_amount": number,"p_currency_code"?: string,"p_description"?: string,"p_inquiry_id": string,"p_package_id"?: string,"p_valid_until"?: string }; Returns: Json
+                           },
+"vendor_update_inquiry_status":
+{ Args: { "p_inquiry_id": string,"p_status": string }; Returns: Json
+                           }
           }
           Enums: {
             [_ in never]: never

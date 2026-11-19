@@ -53,6 +53,8 @@ function accentForShortcut(
       return env === 'fusion' ? wine : gold;
     case 'timeline':
       return env === 'modern' ? green : heading;
+    case 'team':
+      return env === 'modern' ? heading : wine;
     default:
       return env === 'traditional' ? green : gold;
   }

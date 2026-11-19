@@ -66,7 +66,7 @@ export function AuthenticatedHomeScreen() {
     const result = await signOut();
     setSigningOut(false);
     if (result.ok) {
-      router.replace('/');
+      router.replace('/login');
     }
   }
 

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { mapChecklistError, type ChecklistUserMessage } from '@/features/checklist/services/checklistErrors';
+import { TASK_SELECT } from '@/features/checklist/services/checklistSelects';
 import type {
   ChecklistTemplate,
   CreateTaskInput,
@@ -18,16 +19,6 @@ export type ChecklistResult<T> =
 function fail(error: { message?: string; code?: string } | Error | null): ChecklistResult<never> {
   return { ok: false, error: mapChecklistError(error) };
 }
-
-const TASK_SELECT = `
-  *,
-  category:task_categories ( id, slug, name_en, icon ),
-  assignees:task_assignees (
-    user_id,
-    assigned_at,
-    profile:profiles ( id, display_name )
-  )
-`;
 
 function normalizeTask(row: Record<string, unknown>): TaskWithRelations {
   const category = row.category as TaskWithRelations['category'] | TaskWithRelations['category'][] | null;
@@ -84,16 +75,11 @@ export async function getWeddingTask(taskId: string): Promise<ChecklistResult<Ta
 }
 
 async function replaceAssignees(taskId: string, assigneeIds: string[]): Promise<ChecklistResult<true>> {
-  const { error: deleteError } = await supabase.from('task_assignees').delete().eq('task_id', taskId);
-  if (deleteError) return fail(deleteError);
-
-  const unique = [...new Set(assigneeIds)];
-  if (unique.length === 0) return { ok: true, data: true };
-
-  const { error: insertError } = await supabase.from('task_assignees').insert(
-    unique.map((user_id) => ({ task_id: taskId, user_id })),
-  );
-  if (insertError) return fail(insertError);
+  const { error } = await supabase.rpc('set_task_assignees', {
+    p_task_id: taskId,
+    p_user_ids: [...new Set(assigneeIds)],
+  });
+  if (error) return fail(error);
   return { ok: true, data: true };
 }
 
@@ -312,4 +298,51 @@ export async function addTaskComment(
 
   if (error) return fail(error);
   return { ok: true, data };
+}
+
+export async function deleteTaskComment(commentId: string): Promise<ChecklistResult<true>> {
+  const { error } = await supabase.from('task_comments').delete().eq('id', commentId);
+  if (error) return fail(error);
+  return { ok: true, data: true };
+}
+
+export type TaskActivityItem = {
+  id: string;
+  action: string;
+  actor_id: string | null;
+  created_at: string;
+  summary: Record<string, unknown>;
+  actor_name: string | null;
+};
+
+export async function listTaskActivity(
+  weddingId: string,
+  taskId: string,
+): Promise<ChecklistResult<TaskActivityItem[]>> {
+  const { data, error } = await supabase
+    .from('wedding_activity_log')
+    .select('id, action, actor_id, created_at, summary, actor:profiles!wedding_activity_log_actor_id_fkey ( display_name )')
+    .eq('wedding_id', weddingId)
+    .eq('entity_type', 'task')
+    .eq('entity_id', taskId)
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  if (error) return fail(error);
+
+  return {
+    ok: true,
+    data: (data ?? []).map((row) => {
+      const actor = row.actor as { display_name: string } | { display_name: string }[] | null;
+      const resolved = Array.isArray(actor) ? actor[0] : actor;
+      return {
+        id: row.id,
+        action: row.action,
+        actor_id: row.actor_id,
+        created_at: row.created_at,
+        summary: (row.summary ?? {}) as Record<string, unknown>,
+        actor_name: resolved?.display_name?.trim() || null,
+      };
+    }),
+  };
 }

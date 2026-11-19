@@ -41,7 +41,9 @@ import {
   type CategoryProgressRow,
 } from '@/features/checklist/utils/categoryProgress';
 import { computeChecklistProgress, filterTasks } from '@/features/checklist/utils/taskHelpers';
-import { useWedding, useWeddingRole } from '@/features/weddings/queries';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWeddingAccess } from '@/features/team/queries';
+import { useWedding } from '@/features/weddings/queries';
 import { errorMessage } from '@/lib/query/queryError';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { spacing } from '@/theme/spacing';
@@ -57,9 +59,10 @@ export function ChecklistScreen() {
     weddingId: string;
     categoryId?: string;
   }>();
+  const { user } = useAuth();
 
   const wedding = useWedding(weddingId);
-  const { canWrite } = useWeddingRole(weddingId);
+  const { canWrite, can } = useWeddingAccess(weddingId);
   const tasksQuery = useWeddingTasks(weddingId);
   const categoriesQuery = useTaskCategories();
   const templateCountQuery = useTemplateCount();
@@ -76,11 +79,11 @@ export function ChecklistScreen() {
   const tasks = tasksQuery.data ?? EMPTY_TASKS;
   const categories = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const templateCount = templateCountQuery.data ?? 0;
-  const counts = useMemo(() => countByChecklistTab(tasks), [tasks]);
+  const counts = useMemo(() => countByChecklistTab(tasks, user?.id), [tasks, user?.id]);
   const progress = useMemo(() => computeChecklistProgress(tasks), [tasks]);
   const categoryRows = useMemo(
-    () => buildCategoryProgress(categories, tasks, tab),
-    [categories, tasks, tab],
+    () => buildCategoryProgress(categories, tasks, tab, user?.id),
+    [categories, tasks, tab, user?.id],
   );
 
   const selectedCategory =
@@ -95,31 +98,41 @@ export function ChecklistScreen() {
     if (selectedCategoryId === '__none__') {
       return tasks.filter((t) => {
         if (t.category_id || t.status === 'cancelled') return false;
+        if (tab === 'mine') {
+          return Boolean(user?.id && t.assignees.some((a) => a.user_id === user.id));
+        }
         if (tab === 'done') return t.status === 'done';
         if (tab === 'todo') return t.status !== 'done';
         return true;
       });
     }
     const base = filterTasks(tasks, {
-      status: 'all',
+      status: tab === 'mine' ? 'assigned_to_me' : 'all',
       categoryId: selectedCategoryId,
+      currentUserId: user?.id ?? null,
     });
+    if (tab === 'mine') return base;
     if (tab === 'todo') return base.filter((t) => t.status !== 'done' && t.status !== 'cancelled');
     if (tab === 'done') return base.filter((t) => t.status === 'done');
     return base.filter((t) => t.status !== 'cancelled');
-  }, [tasks, selectedCategoryId, tab]);
+  }, [tasks, selectedCategoryId, tab, user]);
 
   const toggleStatus = toggle.mutate;
+  const canToggleTask = useCallback(
+    (task: TaskWithRelations) =>
+      can('tasks.update') || Boolean(user?.id && task.assignees.some((a) => a.user_id === user.id)),
+    [can, user],
+  );
   const onToggleComplete = useCallback(
-    (taskId: string, currentlyDone: boolean) => {
-      if (!canWrite) return;
+    (task: TaskWithRelations, currentlyDone: boolean) => {
+      if (!canToggleTask(task)) return;
       setActionError(null);
       toggleStatus(
-        { taskId, status: currentlyDone ? 'todo' : 'done' },
+        { taskId: task.id, status: currentlyDone ? 'todo' : 'done' },
         { onError: (error) => setActionError(errorMessage(error)) },
       );
     },
-    [canWrite, toggleStatus],
+    [canToggleTask, toggleStatus],
   );
 
   const onOpenTask = useCallback(
@@ -161,13 +174,13 @@ export function ChecklistScreen() {
       return (
         <TaskRow
           task={task}
-          canWrite={canWrite}
+          canWrite={canToggleTask(task)}
           onPress={() => onOpenTask(task.id)}
-          onToggleComplete={() => onToggleComplete(task.id, task.status === 'done')}
+          onToggleComplete={() => onToggleComplete(task, task.status === 'done')}
         />
       );
     },
-    [showingCategories, canWrite, onOpenCategory, onOpenTask, onToggleComplete],
+    [showingCategories, canToggleTask, onOpenCategory, onOpenTask, onToggleComplete],
   );
 
   if (!weddingId) {

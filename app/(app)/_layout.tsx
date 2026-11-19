@@ -23,6 +23,7 @@ export default function AppLayout() {
       }}>
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
       <Stack.Screen name="create-wedding" options={{ animation: 'slide_from_bottom', presentation: 'card' }} />
+      <Stack.Screen name="vendor-action" options={{ animation: 'fade' }} />
       <Stack.Screen name="weddings/index" options={{ animation: 'fade' }} />
       {/* Main wedding tabs: soft fade so replace() between peers does not hard-cut. */}
       <Stack.Screen name="weddings/[weddingId]/index" options={{ animation: 'fade', animationDuration: 180 }} />

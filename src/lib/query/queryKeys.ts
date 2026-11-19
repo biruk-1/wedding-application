@@ -9,6 +9,9 @@ import type { VendorServerFilters } from '@/features/vendors/types';
 export const queryKeys = {
   user: (userId: string) => ['u', userId] as const,
   memberships: (userId: string) => ['u', userId, 'memberships'] as const,
+  /** Pending Planning Team invites addressed to this user (any wedding). */
+  myPendingTeamInvites: (userId: string) =>
+    ['u', userId, 'my-pending-team-invites'] as const,
 
   wedding: (userId: string, weddingId: string) => ['u', userId, 'wedding', weddingId] as const,
   tasks: (userId: string, weddingId: string) =>
@@ -27,6 +30,18 @@ export const queryKeys = {
     ['u', userId, 'wedding', weddingId, 'team-members'] as const,
   teamInvites: (userId: string, weddingId: string) =>
     ['u', userId, 'wedding', weddingId, 'team-invites'] as const,
+  memberPermissions: (userId: string, weddingId: string, memberUserId: string) =>
+    ['u', userId, 'wedding', weddingId, 'member-permissions', memberUserId] as const,
+  groupCoordinators: (userId: string, weddingId: string, groupId?: string) =>
+    groupId
+      ? (['u', userId, 'wedding', weddingId, 'group-coordinators', groupId] as const)
+      : (['u', userId, 'wedding', weddingId, 'group-coordinators'] as const),
+  memberCoordinations: (userId: string, weddingId: string, memberUserId: string) =>
+    ['u', userId, 'wedding', weddingId, 'member-coordinations', memberUserId] as const,
+  roleTemplatePermissions: (userId: string, template: string) =>
+    ['u', userId, 'ref', 'role-template', template] as const,
+  teamActivity: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'team-activity'] as const,
   /**
    * Public Planning Team invite preview. Not under `['u', userId]` — join works signed out.
    */
@@ -79,6 +94,18 @@ export const queryKeys = {
    * cleared whenever the signed-in account changes.
    */
   publicInvite: (token: string) => ['invite', token] as const,
+  /**
+   * Public marketplace (Explore). Not user-scoped: every read is limited to published, verified
+   * vendors and public columns, so the result is the same for every viewer and signed-out guests.
+   */
+  publicVendorsRoot: () => ['public', 'vendors'] as const,
+  publicVendorCategories: () => ['public', 'vendors', 'categories'] as const,
+  publicVendorCities: () => ['public', 'vendors', 'cities'] as const,
+  publicVendorSearch: (filters: VendorServerFilters) =>
+    ['public', 'vendors', 'search', filters] as const,
+  publicVendorServices: (categoryId: string | null) =>
+    ['public', 'vendors', 'services', categoryId ?? 'all'] as const,
+  publicVendorProfile: (vendorId: string) => ['public', 'vendors', 'profile', vendorId] as const,
 
   weddingBudget: (userId: string, weddingId: string) =>
     ['u', userId, 'wedding', weddingId, 'budget'] as const,

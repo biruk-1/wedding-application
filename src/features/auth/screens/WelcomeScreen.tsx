@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   Image,
@@ -17,6 +17,7 @@ import { WELCOME_PORTRAIT } from '@/theme/palettes';
 import { spacing } from '@/theme/spacing';
 import type { AppColors } from '@/theme/types';
 import { typography } from '@/theme/typography';
+import { isDevCollabLoginEnabled } from '@/lib/devFlags';
 import { useColors } from '@/theme/WeddingThemeContext';
 import { useThemedStyles } from '@/theme/useThemedStyles';
 
@@ -76,20 +77,39 @@ export function WelcomeScreen() {
 
         <View style={styles.actions}>
           <Button
-            label="Get Started"
-            accessibilityHint="Continue to create an account"
+            label="Start Planning"
+            accessibilityHint="Create an account and set up your celebration"
             onPress={() => router.push('/register')}
+          />
+          <Button
+            label="Explore Vendors"
+            variant="ghost"
+            accessibilityHint="Browse verified vendors without an account"
+            onPress={() => router.push('/explore-vendors' as Href)}
+            style={styles.onPhotoOutline}
           />
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel="I already have an account"
+            accessibilityLabel="I already have an account. Sign in"
             hitSlop={10}
             onPress={() => router.push('/login')}
             style={({ pressed }) => [styles.secondaryLink, pressed && styles.secondaryPressed]}>
             <AppText variant="bodyMedium" color="textOnDark" style={styles.secondaryText}>
-              I already have an account
+              I already have an account · Sign In
             </AppText>
           </Pressable>
+          {isDevCollabLoginEnabled() ? (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Dev collaborator login"
+              hitSlop={10}
+              onPress={() => router.push('/dev/collab-login')}
+              style={({ pressed }) => [styles.secondaryLink, pressed && styles.secondaryPressed]}>
+              <AppText variant="caption" color="textOnDark" style={styles.secondaryText}>
+                Dev: collaborator login (temporary)
+              </AppText>
+            </Pressable>
+          ) : null}
 
         </View>
       </View>
@@ -131,8 +151,13 @@ function createStyles(colors: AppColors) {
     flexGrow: 1,
     minHeight: spacing['3xl'],
   },
+  onPhotoOutline: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.75)',
+    backgroundColor: 'rgba(20,24,20,0.28)',
+  },
   actions: {
-    gap: spacing.lg,
+    gap: spacing.md,
     alignItems: 'stretch',
     paddingBottom: spacing.sm,
     width: '100%',

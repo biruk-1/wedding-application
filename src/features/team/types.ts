@@ -58,6 +58,19 @@ export type TeamInviteListItem = {
   invited_by: string;
 };
 
+/** Pending invite addressed to the signed-in user (inbox on wedding selector). */
+export type MyPendingTeamInvite = {
+  id: string;
+  wedding_id: string;
+  wedding_title: string;
+  role: WeddingMemberRole;
+  invite_kind: TeamInviteKind;
+  status: TeamInviteStatus;
+  expires_at: string;
+  created_at: string;
+  inviter_name: string;
+};
+
 export type CreateTeamInviteInput = {
   weddingId: string;
   email: string;
@@ -77,6 +90,27 @@ export type CreatedTeamInvite = {
   inviteId: string;
   rawToken: string;
   expiresAt: string;
+};
+
+export type TeamActivityItem = {
+  id: string;
+  action: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  entity_type: string;
+  entity_id: string | null;
+  created_at: string;
+  summary: Record<string, unknown>;
+  required_permission: string | null;
+};
+
+export type GroupCoordinator = {
+  group_id: string;
+  user_id: string;
+  can_delete: boolean;
+  can_send_invitations: boolean;
+  assigned_at: string;
+  display_name: string;
 };
 
 export type { GuestGroupCapability, PermissionKey, WeddingMemberRole };

@@ -6,6 +6,7 @@
  * Photos are fetched from their licensed sources (see assets/themes/ATTRIBUTION.md),
  * cropped and recompressed. Textures are generated procedurally so they tile seamlessly.
  */
+import { Buffer } from 'node:buffer';
 import { createRequire } from 'node:module';
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';

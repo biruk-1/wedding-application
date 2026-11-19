@@ -218,7 +218,9 @@ export function SettingsScreen({ weddingId }: { weddingId?: string }) {
           label="Sign out"
           variant="danger"
           onPress={() => {
-            void signOut();
+            void signOut().then((result) => {
+              if (result.ok) router.replace('/login');
+            });
           }}
         />
       </View>

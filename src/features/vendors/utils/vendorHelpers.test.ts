@@ -13,22 +13,14 @@ import {
 
 function vendor(partial: Partial<VendorListItem> & Pick<VendorListItem, 'id' | 'business_name'>): VendorListItem {
   return {
-    owner_user_id: 'o',
     slug: partial.business_name.toLowerCase().replace(/\s+/g, '-'),
     description: null,
-    phone: null,
-    email: null,
     website_url: null,
     instagram_url: null,
     city: null,
     country_code: 'ET',
-    address: null,
     logo_url: null,
     cover_url: null,
-    verification_status: 'verified',
-    listing_status: 'published',
-    created_at: '',
-    updated_at: '',
     categories: [],
     startingPrice: null,
     ...partial,

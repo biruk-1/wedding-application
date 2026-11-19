@@ -24,8 +24,17 @@ export function mapChecklistError(
       message: 'Network error. Check your connection and try again.',
     };
   }
+  if (
+    message.includes('could not embed') ||
+    message.includes('more than one relationship')
+  ) {
+    return {
+      code: 'schema',
+      message: 'Could not load the checklist. Please try again.',
+    };
+  }
   return {
     code,
-    message: 'Could not update the checklist. Please try again.',
+    message: 'Could not complete that checklist action. Please try again.',
   };
 }

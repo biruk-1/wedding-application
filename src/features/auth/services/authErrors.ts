@@ -47,12 +47,39 @@ export function mapAuthError(error: AuthError | Error | null | undefined): AuthU
   if (
     code === 'otp_expired' ||
     code === 'flow_state_expired' ||
-    raw.includes('expired') ||
+    raw.includes('otp has expired') ||
     raw.includes('token has expired')
   ) {
     return {
       code: 'otp_expired',
-      message: 'This password-reset link has expired. Request a new one.',
+      message: 'This code or link has expired. Request a new one.',
+    };
+  }
+
+  if (code === 'otp_disabled' || (raw.includes('otp') && raw.includes('disabled'))) {
+    return {
+      code: 'otp_disabled',
+      message: 'Email verification is temporarily unavailable. Try again later.',
+    };
+  }
+
+  if (
+    code === 'invalid_otp' ||
+    raw.includes('token is invalid') ||
+    raw.includes('invalid otp') ||
+    raw.includes('otp_expired') ||
+    (raw.includes('invalid') && raw.includes('token'))
+  ) {
+    return {
+      code: 'invalid_otp',
+      message: 'That verification code is incorrect or has expired.',
+    };
+  }
+
+  if (status === 429 || code === 'over_email_send_rate_limit' || raw.includes('rate limit')) {
+    return {
+      code: 'rate_limit',
+      message: 'Too many attempts. Wait a moment, then try again.',
     };
   }
 

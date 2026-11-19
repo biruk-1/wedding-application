@@ -6,6 +6,7 @@ export const TASK_SELECT = `
   assignees:task_assignees (
     user_id,
     assigned_at,
-    profile:profiles ( id, display_name )
+    profile:profiles!task_assignees_user_id_fkey ( id, display_name )
   )
 `;
+

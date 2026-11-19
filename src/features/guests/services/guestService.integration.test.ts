@@ -207,26 +207,31 @@ describe('guest management and invitations against local Supabase', () => {
     if (!ready || !weddingA || !weddingB) skip();
     await signInAs(emailB);
 
-    const peek = must(await listGuests(weddingA!, { query: '', groupId: null }));
-    expect(peek.items).toHaveLength(0);
-    const peekGuest = await getGuest(weddingA!, guestId);
-    expect(peekGuest.ok).toBe(false);
-    expect(must(await listInvitations(weddingA!))).toHaveLength(0);
-    expect(must(await listRsvpsForWedding(weddingA!))).toHaveLength(0);
+    try {
+      // Non-members get a hard deny from list/get RPCs (not an empty success payload).
+      const peek = await listGuests(weddingA!, { query: '', groupId: null });
+      expect(peek.ok).toBe(false);
+      const peekGuest = await getGuest(weddingA!, guestId);
+      expect(peekGuest.ok).toBe(false);
+      const peekInvites = await listInvitations(weddingA!);
+      expect(peekInvites.ok === false || (peekInvites.ok && peekInvites.data.length === 0)).toBe(true);
+      const peekRsvps = await listRsvpsForWedding(weddingA!);
+      expect(peekRsvps.ok === false || (peekRsvps.ok && peekRsvps.data.length === 0)).toBe(true);
 
-    const write = await createGuest(weddingA!, { fullName: 'Intruder' });
-    expect(write.ok).toBe(false);
-    const rename = await updateGuest(weddingA!, guestId, { fullName: 'Hacked' });
-    expect(rename.ok).toBe(false);
+      const write = await createGuest(weddingA!, { fullName: 'Intruder' });
+      expect(write.ok).toBe(false);
+      const rename = await updateGuest(weddingA!, guestId, { fullName: 'Hacked' });
+      expect(rename.ok).toBe(false);
 
-    const own = must(await createGuest(weddingB!, { fullName: 'Own Guest' }));
-    expect(own.wedding_id).toBe(weddingB);
-    expect(must(await listGuests(weddingB!, { query: '', groupId: null })).items).toHaveLength(1);
+      const own = must(await createGuest(weddingB!, { fullName: 'Own Guest' }));
+      expect(own.wedding_id).toBe(weddingB);
+      expect(must(await listGuests(weddingB!, { query: '', groupId: null })).items).toHaveLength(1);
 
-    const invite = await createInvitation({ weddingId: weddingA!, guestId });
-    expect(invite.ok).toBe(false);
-
-    await signInAs(emailA);
+      const invite = await createInvitation({ weddingId: weddingA!, guestId });
+      expect(invite.ok).toBe(false);
+    } finally {
+      await signInAs(emailA);
+    }
   });
 
   it('creates designs and events', async ({ skip }) => {

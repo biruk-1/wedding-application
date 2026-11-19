@@ -1,34 +1,88 @@
 import { useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/layout/Screen';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { WeddingListSkeleton } from '@/components/skeletons/ScreenSkeletons';
+import { useMyPendingTeamInvites } from '@/features/team/queries';
+import {
+  loadPendingVendorAction,
+  peekPendingVendorAction,
+} from '@/features/vendors/services/pendingVendorAction';
 import { normalizeCelebrationKind } from '@/features/weddings/celebrationCopy';
 import { useMyWeddings } from '@/features/weddings/hooks/useMyWeddings';
-import { OnboardingWelcomeScreen } from '@/features/weddings/screens/OnboardingWelcomeScreen';
+import { resolveAppHomeDestination } from '@/features/weddings/navigation/resolveAppHomeDestination';
 import { spacing } from '@/theme/spacing';
 
 /**
- * Authenticated entry: onboarding (0), dashboard (1), or selector (many).
+ * Authenticated entry: create/onboarding (0), dashboard (1), or selector (many / pending invites).
+ * No intermediate “Welcome to Kiburan” screen — destinations are replace()-navigated once.
  */
 export function AppHomeHubScreen() {
   const router = useRouter();
   const { memberships, isLoading, error, refresh } = useMyWeddings();
-  const singleId = memberships.length === 1 ? memberships[0]?.wedding_id : null;
+  const pendingQuery = useMyPendingTeamInvites();
+  const singleId = memberships.length === 1 ? memberships[0]?.wedding_id ?? null : null;
+  const pendingLoading = pendingQuery.isLoading;
+  const pendingCount = pendingQuery.data?.length ?? 0;
+  const membershipCount = memberships.length;
   const includesOtherCelebrations = memberships.some(
     ({ wedding }) => normalizeCelebrationKind(wedding.celebration_kind) !== 'wedding',
   );
+  const [hasVendorAction, setHasVendorAction] = useState<boolean | null>(
+    peekPendingVendorAction() ? true : null,
+  );
 
   useEffect(() => {
-    if (isLoading || error || !singleId) return;
-    router.replace(`/(app)/weddings/${singleId}` as Href);
-  }, [isLoading, error, singleId, router]);
+    let cancelled = false;
+    void loadPendingVendorAction().then((action) => {
+      if (!cancelled) setHasVendorAction(Boolean(action));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  if (isLoading || (singleId && !error)) {
+  const vendorActionLoading = hasVendorAction === null;
+  const ready = !isLoading && !pendingLoading && !error && !vendorActionLoading;
+  const destination = ready
+    ? resolveAppHomeDestination({
+        membershipCount,
+        singleWeddingId: singleId,
+        pendingInviteCount: pendingCount,
+        hasPendingVendorAction: Boolean(hasVendorAction),
+      })
+    : null;
+
+  useEffect(() => {
+    if (!ready) return;
+    const next = resolveAppHomeDestination({
+      membershipCount,
+      singleWeddingId: singleId,
+      pendingInviteCount: pendingCount,
+      hasPendingVendorAction: Boolean(hasVendorAction),
+    });
+    if (next.type === 'vendor-action') {
+      router.replace('/(app)/vendor-action' as Href);
+      return;
+    }
+    if (next.type === 'wedding') {
+      router.replace(`/(app)/weddings/${next.weddingId}` as Href);
+      return;
+    }
+    if (next.type === 'selector') {
+      router.replace('/(app)/weddings' as Href);
+      return;
+    }
+    if (next.type === 'create') {
+      router.replace('/(app)/create-wedding' as Href);
+    }
+  }, [ready, membershipCount, singleId, pendingCount, hasVendorAction, router]);
+
+  if (isLoading || pendingLoading || vendorActionLoading || (destination && destination.type !== 'stay-chooser')) {
     return (
       <Screen>
         <StatusBar style="dark" />
@@ -52,10 +106,6 @@ export function AppHomeHubScreen() {
         </View>
       </Screen>
     );
-  }
-
-  if (memberships.length === 0) {
-    return <OnboardingWelcomeScreen />;
   }
 
   return (

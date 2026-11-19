@@ -42,6 +42,25 @@ describe('query keys', () => {
     for (const key of keys) expect(key.slice(0, 2)).toEqual(['u', 'a']);
   });
 
+  it('keeps public Explore keys apart from every user-scoped key', () => {
+    const filters = {
+      query: '',
+      categoryId: null,
+      city: null,
+      minPrice: null,
+      maxPrice: null,
+      queryCategoryIds: [],
+    };
+    const keys = [
+      queryKeys.publicVendorCategories(),
+      queryKeys.publicVendorCities(),
+      queryKeys.publicVendorSearch(filters),
+      queryKeys.publicVendorServices(null),
+      queryKeys.publicVendorProfile('v'),
+    ];
+    for (const key of keys) expect(key.slice(0, 2)).toEqual(['public', 'vendors']);
+  });
+
   it('never shares a cache entry between two users', () => {
     const client = new QueryClient();
     client.setQueryData(queryKeys.wedding('user-a', 'w1'), { title: 'A private wedding' });

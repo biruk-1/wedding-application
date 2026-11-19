@@ -13,11 +13,13 @@ import * as Linking from 'expo-linking';
 import {
   getSession,
   handleAuthCallbackUrl,
+  requestEmailOtp,
   requestPasswordReset,
   signIn,
   signOut,
   signUp,
   updatePassword,
+  verifyEmailOtp,
   type AuthResult,
 } from '@/features/auth/services/authService';
 import type { AuthUserMessage } from '@/features/auth/services/authErrors';
@@ -39,6 +41,8 @@ export type AuthContextValue = {
   signOut: typeof signOut;
   requestPasswordReset: typeof requestPasswordReset;
   updatePassword: typeof updatePassword;
+  requestEmailOtp: typeof requestEmailOtp;
+  verifyEmailOtp: typeof verifyEmailOtp;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -138,6 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       requestPasswordReset,
       updatePassword,
+      requestEmailOtp,
+      verifyEmailOtp,
     }),
     [session, isLoading, isPasswordRecovery, clearPasswordRecovery],
   );

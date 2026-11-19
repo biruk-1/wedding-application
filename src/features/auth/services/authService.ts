@@ -68,6 +68,35 @@ export async function signIn(input: {
   return { ok: true, data: { session: data.session } };
 }
 
+/** Passwordless email OTP (invitees and optional future login). Creates user if needed. */
+export async function requestEmailOtp(email: string): Promise<AuthResult<{ sent: true }>> {
+  const { error } = await supabase.auth.signInWithOtp({
+    email: email.trim(),
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: Linking.createURL('join'),
+    },
+  });
+  if (error) return fail(error);
+  return { ok: true, data: { sent: true } };
+}
+
+export async function verifyEmailOtp(input: {
+  email: string;
+  token: string;
+}): Promise<AuthResult<{ session: Session }>> {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: input.email.trim(),
+    token: input.token.trim(),
+    type: 'email',
+  });
+  if (error) return fail(error);
+  if (!data.session) {
+    return fail(new Error('No session returned'));
+  }
+  return { ok: true, data: { session: data.session } };
+}
+
 export async function signOut(): Promise<AuthResult<{ signedOut: true }>> {
   const { error } = await supabase.auth.signOut();
   if (error) return fail(error);

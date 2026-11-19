@@ -1,6 +1,6 @@
 # Planning Team — 08. Implementation roadmap
 
-Milestones 1–6 are implemented locally (docs 09–13). Nothing is deployed.
+Milestones 1–9 plus finish polish (docs 09–17) are implemented locally. Nothing is deployed.
 
 Global rules for every milestone: migrations are additive and reviewed before applying; applied only to the local stack (`npm run db:reset`) until explicitly approved; types regenerated (`npm run db:types`); `npm run typecheck`, `npm run lint`, `npm test`, and both SQL security suites pass before a milestone is declared done; no service-role key in the app; no fake data in shared environments.
 
@@ -58,20 +58,43 @@ Done locally (doc 13):
 
 ### Milestone 7 — Tasks and collaboration
 
-- "Assigned to me" filter and dashboard section; `set_task_assignees` RPC (atomic).
-- Assignee status-update record rule (trigger limits which columns an assignee without `tasks.update` may change).
-- Comments allowed for `tasks.comment` and assignees; task activity entries.
+Done locally (doc 14):
+
+- "Assigned to me" checklist tab and dashboard **Your tasks**; `set_task_assignees` RPC (atomic).
+- Assignee status-update record rule (trigger limits columns without `tasks.update`).
+- Comments for `tasks.comment` and assignees; task activity entries on detail.
 
 ### Milestone 8 — Planning Team UI
 
-- Screens from doc 07 §2 using existing components and theme hooks only.
-- Owner-only routes guarded in UI (and already guarded in the database).
-- Accessibility labels, skeletons, empty states, error mapping consistent with other features.
+Done locally (doc 15):
+
+- Team overview, invite, pending invites, member detail, permission editor, activity, group coordinators.
+- Entry on `WeddingMoreScreen`; coordinator entry on `GuestGroupsScreen`.
+- Owner-only routes guarded in UI (database already enforces); skeletons / empty / error patterns match other features.
 
 ### Milestone 9 — Integration and security testing
 
-- Real local test accounts: owner A, owner B, co-host, planner, family coordinator (bride's family), family coordinator (groom's family), task manager, viewer, custom, outsider, second-wedding owner.
-- Scenarios: equal owners; owner cannot demote the other; collaborator cannot invite; group isolation; budget isolation (including dashboard and documents); invite accept/revoke/expire/forward; workspace switching; concurrent edits on the same guest/task; cross-wedding isolation; regression of every existing feature (existing integration tests + manual pass on device).
+Done locally (doc 16):
+
+- `planning_team_integration.sql` — full multi-role cast and scenarios (equal owners, demote block, invite deny, group/budget/documents isolation, invite revoke/expire, workspace isolation, concurrent edits, co-owner cap).
+- Wired into `npm run db:test:security` (8 SQL suites).
+- Guest integration test updated for hard deny on cross-wedding list RPCs; full Vitest pass.
+
+### Finish polish (after M9)
+
+Done locally (doc 17):
+
+- Invitee inbox RPCs + wedding-selector Join UI.
+- Dashboard Team shortcut; permission-aware feature tiles.
+- Invite-screen copy clarifying share-sheet delivery (no email provider).
+
+### Passwordless invite auth
+
+Done locally (doc 18):
+
+- Invite join flow uses Supabase email OTP (no password required for invitees).
+- `validate_team_invite_email` before OTP; accept still enforced server-side.
+- Password login/register/reset preserved.
 
 ## 2. Unresolved decisions (need product/PM answers)
 

@@ -1,6 +1,6 @@
 # Planning Team — 07. Application integration plan
 
-Status: plan only. No screens, routes, or services were created.
+Status: plan + implemented through finish polish (docs 15–17). Services/queries from M3–M7; team screens from M8; integration tests M9; dashboard shortcut + invitee inbox doc 17.
 
 The goal is to add the Planning Team to the existing app shape: Expo Router routes under `app/(app)/weddings/[weddingId]/`, feature code under `src/features/`, TanStack Query hooks with user-scoped keys, and the existing UI kit (`src/components/ui`, `Screen`, `Header`, `Card`, `Button`, `Badge`, skeletons) and adaptive Ethiopian themes (`useColors`, `useThemedStyles`, `WeddingThemeContext`). No second design system.
 

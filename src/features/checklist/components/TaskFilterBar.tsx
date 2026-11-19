@@ -11,6 +11,7 @@ import { useThemedStyles } from '@/theme/useThemedStyles';
 
 const STATUS_CHIPS: { id: StatusFilter; label: string }[] = [
   { id: 'all', label: 'All' },
+  { id: 'assigned_to_me', label: 'Assigned to me' },
   { id: 'todo', label: 'To do' },
   { id: 'in_progress', label: 'In progress' },
   { id: 'done', label: 'Completed' },

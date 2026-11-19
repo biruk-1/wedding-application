@@ -42,6 +42,6 @@ No Planning Team permission screens yet (Milestone 8). Group-scoped guest isolat
 ## 4. Still deferred
 
 - Group-scoped guest RLS refinements and coordinator RPCs — done in Milestone 6 (doc 13).
-- Task assignee column-limit trigger and comment rules (Milestone 7).
+- Task assignee column-limit trigger and comment rules — done in Milestone 7 (doc 14).
 - Permission / team management screens (Milestone 8).
 - Production apply — local only until explicitly approved.

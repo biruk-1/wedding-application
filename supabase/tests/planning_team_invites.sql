@@ -97,6 +97,7 @@ declare
   u_wrong uuid := pg_temp.make_user('m4-wrong@kiburan.test');
   u_co uuid := pg_temp.make_user('m4-coowner@kiburan.test');
   u_coord uuid := pg_temp.make_user('m4-coord@kiburan.test');
+  u_inbox uuid := pg_temp.make_user('m4-inbox@kiburan.test');
   w uuid;
   v_group uuid;
   v_invite_id uuid;
@@ -303,6 +304,52 @@ begin
   perform pg_temp.expect_error('anon cannot create',
     format('select * from public.create_team_invite(%L, %L)', w, 'z@kiburan.test'),
     'permission denied%');
+
+  ---------------------------------------------------------------------------
+  -- Invitee inbox: list_my_pending_team_invites + accept_my_team_invite
+  ---------------------------------------------------------------------------
+
+  perform pg_temp.as_user(u_owner);
+  select invite_id into v_invite_id
+  from public.create_team_invite(w, 'm4-inbox@kiburan.test', 'collaborator', 'viewer');
+
+  perform pg_temp.as_user(u_wrong);
+  v_list := public.list_my_pending_team_invites();
+  perform pg_temp.check('wrong email sees empty inbox', jsonb_array_length(v_list) = 0);
+  perform pg_temp.expect_error('wrong email cannot accept by id',
+    format('select public.accept_my_team_invite(%L)', v_invite_id),
+    '%different email address%');
+
+  perform pg_temp.as_user(u_inbox);
+  v_list := public.list_my_pending_team_invites();
+  perform pg_temp.check('invitee sees pending invite',
+    jsonb_array_length(v_list) = 1
+    and v_list -> 0 ->> 'id' = v_invite_id::text
+    and v_list -> 0 ->> 'wedding_title' = 'M4 Wedding');
+
+  select * into v_member from public.accept_my_team_invite(v_invite_id);
+  perform pg_temp.check('inbox accept creates membership',
+    v_member.user_id = u_inbox and v_member.role = 'viewer');
+
+  v_list := public.list_my_pending_team_invites();
+  perform pg_temp.check('inbox empty after accept', jsonb_array_length(v_list) = 0);
+
+  ---------------------------------------------------------------------------
+  -- validate_team_invite_email (passwordless gate)
+  ---------------------------------------------------------------------------
+
+  perform pg_temp.as_user(u_owner);
+  select invite_id, raw_token into v_invite_id, v_token
+  from public.create_team_invite(w, 'm4-otp@kiburan.test', 'collaborator', 'viewer');
+
+  perform pg_temp.as_anon();
+  v_preview := public.validate_team_invite_email(v_token, 'm4-otp@kiburan.test');
+  perform pg_temp.check('validate email ok',
+    (v_preview ->> 'ok')::boolean
+    and v_preview ->> 'wedding_title' = 'M4 Wedding');
+  perform pg_temp.expect_error('validate wrong email',
+    format('select public.validate_team_invite_email(%L, %L)', v_token, 'm4-wrong@kiburan.test'),
+    '%different email address%');
 
   raise notice 'PASS: planning_team_invites checks completed';
 end;
