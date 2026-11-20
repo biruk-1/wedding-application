@@ -11,6 +11,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -24,6 +25,10 @@ import { SearchField } from '@/components/ui/SearchField';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { VendorCard } from '@/features/vendors/components/VendorCard';
 import { VendorFilterBar } from '@/features/vendors/components/VendorFilterBar';
+import {
+  sheetFilterCount,
+  VendorFiltersSheet,
+} from '@/features/vendors/components/VendorFiltersSheet';
 import {
   usePublicServices,
   usePublicVendorCategories,
@@ -54,6 +59,8 @@ const SORTS: { id: VendorSort; label: string }[] = [
   { id: 'newest', label: 'Newest' },
 ];
 
+const GRID_BREAKPOINT = 520;
+
 export function exploreVendorHref(vendorId: string): Href {
   return `/explore-vendors/${vendorId}` as Href;
 }
@@ -63,15 +70,20 @@ export function ExploreVendorsScreen() {
   const styles = useThemedStyles(createStyles);
   const colors = useColors();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const { session } = useAuth();
   const [filters, setFilters] = useState<VendorFilters>(emptyFilters);
   const [sort, setSort] = useState<VendorSort>('name');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const categories = usePublicVendorCategories();
   const cities = usePublicVendorCities();
   const services = usePublicServices(filters.categoryId);
   const search = usePublicVendorSearch(filters, sort);
 
+  const numColumns = width >= GRID_BREAKPOINT ? 2 : 1;
+  const cardLayout = numColumns > 1 ? 'grid' : 'row';
+  const sheetCount = sheetFilterCount(filters);
   const hasActiveFilters = Boolean(
     filters.query.trim() ||
       filters.categoryId ||
@@ -80,6 +92,10 @@ export function ExploreVendorsScreen() {
       filters.maxPrice != null,
   );
   const resetFilters = useCallback(() => setFilters(emptyFilters()), []);
+  const resetSheetFilters = useCallback(() => {
+    setFilters((current) => ({ ...current, city: null, minPrice: null, maxPrice: null }));
+    setFiltersOpen(false);
+  }, []);
 
   const goBack = useCallback(() => {
     if (router.canGoBack()) router.back();
@@ -93,9 +109,11 @@ export function ExploreVendorsScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: VendorListItem }) => (
-      <VendorCard vendor={item} onPress={() => openVendor(item.id)} />
+      <View style={numColumns > 1 ? styles.gridItem : undefined}>
+        <VendorCard vendor={item} layout={cardLayout} onPress={() => openVendor(item.id)} />
+      </View>
     ),
-    [openVendor],
+    [openVendor, numColumns, cardLayout, styles.gridItem],
   );
 
   const onRefresh = useCallback(() => {
@@ -113,23 +131,28 @@ export function ExploreVendorsScreen() {
     filters.maxPrice == null &&
     serviceItems.length > 0;
 
+  const resultLabel = useMemo(() => {
+    const count = search.vendors.length;
+    if (search.isLoading && count === 0) return 'Loading vendors…';
+    if (count === 0) return 'No vendors';
+    if (search.hasNextPage) return `Showing ${count}+ vendors`;
+    return `${count} vendor${count === 1 ? '' : 's'}`;
+  }, [search.vendors.length, search.isLoading, search.hasNextPage]);
+
   const listHeader = (
     <View style={styles.headerBlock}>
       <View style={styles.topBar}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Go back"
-          hitSlop={12}
+          accessibilityLabel="Kiburan home"
+          hitSlop={8}
           onPress={goBack}
-          style={styles.iconButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.success} />
-        </Pressable>
-        <View style={styles.brand}>
+          style={styles.brand}>
           <BrandMark size={22} color={colors.primary} />
           <AppText variant="label" color="heading">
             Kiburan
           </AppText>
-        </View>
+        </Pressable>
         {session ? (
           <Pressable
             accessibilityRole="button"
@@ -157,7 +180,7 @@ export function ExploreVendorsScreen() {
         Explore vendors
       </AppText>
       <AppText variant="caption" color="textMuted">
-        Browse verified vendors on Kiburan. No account needed.
+        Discover trusted vendors for your celebration. Browse freely — no account needed.
       </AppText>
 
       {!session ? (
@@ -182,6 +205,7 @@ export function ExploreVendorsScreen() {
       <SearchField
         value={filters.query}
         onChangeText={(query) => setFilters((current) => ({ ...current, query }))}
+        onClear={() => setFilters((current) => ({ ...current, query: '' }))}
         placeholder="Search vendors, services, cities…"
         accessibilityLabel="Search vendors"
         returnKeyType="search"
@@ -202,12 +226,18 @@ export function ExploreVendorsScreen() {
         hasActiveFilters={hasActiveFilters}
         priceLabel="Price range"
         hideSearch
+        categoriesOnly
+        filterCount={sheetCount}
+        onOpenFilters={() => setFiltersOpen(true)}
       />
 
       {showServices ? (
         <View style={styles.servicesBlock}>
           <AppText variant="label" color="heading">
-            Services
+            Browse by service
+          </AppText>
+          <AppText variant="caption" color="textMuted">
+            Opens the vendor behind each listing.
           </AppText>
           <ScrollView
             horizontal
@@ -226,7 +256,7 @@ export function ExploreVendorsScreen() {
 
       <View style={styles.listTitleRow}>
         <AppText variant="label" color="heading">
-          Verified vendors
+          {resultLabel}
         </AppText>
         <View style={styles.sorts}>
           {SORTS.map((option) => {
@@ -308,13 +338,16 @@ export function ExploreVendorsScreen() {
     <Screen padded={false}>
       <StatusBar style="dark" />
       <FlatList
+        key={`explore-${numColumns}`}
         data={search.vendors}
         keyExtractor={(vendor) => vendor.id}
         renderItem={renderItem}
+        numColumns={numColumns}
+        columnWrapperStyle={numColumns > 1 ? styles.gridRow : undefined}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={empty}
         ListFooterComponent={footer ?? undefined}
-        ItemSeparatorComponent={Separator}
+        ItemSeparatorComponent={numColumns === 1 ? Separator : undefined}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -331,6 +364,21 @@ export function ExploreVendorsScreen() {
             colors={[colors.primary]}
           />
         }
+      />
+      <VendorFiltersSheet
+        visible={filtersOpen}
+        cities={cities.data ?? []}
+        values={{
+          city: filters.city,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+        }}
+        onClose={() => setFiltersOpen(false)}
+        onApply={(next) => {
+          setFilters((current) => ({ ...current, ...next }));
+          setFiltersOpen(false);
+        }}
+        onReset={resetSheetFilters}
       />
     </Screen>
   );
@@ -394,7 +442,7 @@ function createStyles(colors: AppColors) {
   return StyleSheet.create({
     content: {
       paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
+      paddingTop: spacing.sm,
       paddingBottom: spacing['2xl'],
     },
     headerBlock: {
@@ -405,17 +453,14 @@ function createStyles(colors: AppColors) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: spacing.sm,
-    },
-    iconButton: {
-      width: 40,
-      height: 40,
-      justifyContent: 'center',
+      marginBottom: spacing.xs,
+      minHeight: 40,
     },
     brand: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
+      paddingVertical: spacing.xs,
     },
     authLink: {
       minWidth: 40,
@@ -427,7 +472,7 @@ function createStyles(colors: AppColors) {
       alignItems: 'center',
       gap: spacing.md,
       padding: spacing.md,
-      marginVertical: spacing.sm,
+      marginVertical: spacing.xs,
       borderRadius: radii.lg,
       borderWidth: 1,
       borderColor: colors.primaryMuted,
@@ -438,7 +483,7 @@ function createStyles(colors: AppColors) {
       gap: 2,
     },
     servicesBlock: {
-      gap: spacing.sm,
+      gap: spacing.xs,
       marginBottom: spacing.sm,
     },
     servicesRail: {
@@ -474,6 +519,7 @@ function createStyles(colors: AppColors) {
       alignItems: 'center',
       justifyContent: 'space-between',
       marginTop: spacing.sm,
+      gap: spacing.md,
     },
     sorts: {
       flexDirection: 'row',
@@ -500,6 +546,13 @@ function createStyles(colors: AppColors) {
     footer: {
       paddingVertical: spacing.lg,
       alignItems: 'center',
+    },
+    gridRow: {
+      gap: spacing.md,
+    },
+    gridItem: {
+      flex: 1,
+      marginBottom: spacing.md,
     },
   });
 }

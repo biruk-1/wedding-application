@@ -57,15 +57,27 @@ export function LoginScreen() {
       <StatusBar style="dark" />
       <Header
         title="Welcome back"
-        subtitle="Sign in to continue planning"
+        subtitle={
+          vendorAction
+            ? vendorAction.kind === 'save'
+              ? 'Sign in to save this vendor to your plan'
+              : 'Sign in to send your inquiry'
+            : 'Sign in to continue planning'
+        }
         showBack={router.canGoBack()}
       />
       <View style={styles.form}>
         {vendorAction ? (
-          <AppText variant="caption" color="textMuted">
-            {vendorAction.kind === 'save' ? 'Sign in to save' : 'Sign in to contact'}{' '}
-            {vendorAction.vendorName || 'this vendor'}.
-          </AppText>
+          <View style={styles.pendingNotice}>
+            <AppText variant="bodyMedium" color="heading">
+              Account needed for this step
+            </AppText>
+            <AppText variant="caption" color="textMuted">
+              {vendorAction.kind === 'save'
+                ? `We'll return you to ${vendorAction.vendorName || 'this vendor'} and save them to your celebration after you sign in.`
+                : `We'll return you to ${vendorAction.vendorName || 'this vendor'} so you can finish your inquiry after you sign in.`}
+            </AppText>
+          </View>
         ) : null}
         {hint ? (
           <AppText variant="caption" color="textMuted">
@@ -121,6 +133,9 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   form: {
     gap: spacing.lg,
+  },
+  pendingNotice: {
+    gap: spacing.xs,
   },
   forgot: {
     alignSelf: 'flex-end',

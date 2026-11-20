@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,6 +12,8 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { RefreshNotice } from '@/components/ui/RefreshNotice';
+import { AiAssistantChat } from '@/features/ai-assistant/components/AiAssistantChat';
+import { AiAssistantFab } from '@/features/ai-assistant/components/AiAssistantFab';
 import { formatMoney } from '@/features/budget/utils/money';
 import { useBudgetDashboard } from '@/features/budget/queries';
 import { useToggleTaskStatus, useWeddingTasks } from '@/features/checklist/queries';
@@ -54,6 +56,7 @@ export function WeddingDashboardScreen() {
   const invitationsQuery = useInvitations(weddingId);
   const savedVendors = useSavedVendorCount(weddingId);
   const toggle = useToggleTaskStatus(weddingId ?? '');
+  const [aiOpen, setAiOpen] = useState(false);
 
   const handleEditCover = useCallback(() => {
     const copy = getCelebrationCopy(wedding?.celebration_kind);
@@ -349,6 +352,8 @@ export function WeddingDashboardScreen() {
           </View>
         </View>
       </Screen>
+      <AiAssistantFab onPress={() => setAiOpen(true)} />
+      <AiAssistantChat visible={aiOpen} onClose={() => setAiOpen(false)} />
       <View style={styles.tabBar}>
         <WeddingTabBar weddingId={weddingId} />
       </View>

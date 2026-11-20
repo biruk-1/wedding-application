@@ -1,6 +1,6 @@
 # Public Explore Vendors
 
-Status: implemented locally. Grants migration applied to the local stack only.
+Status: redesigned on `feature/explore-vendors-redesign`. Checkpoint before redesign: `checkpoint/pre-explore-vendors-redesign` (`bcbcde3`). Grants migration applied to the local stack only.
 
 ## 1. Audit (before implementation)
 
@@ -8,88 +8,61 @@ Status: implemented locally. Grants migration applied to the local stack only.
 
 | Item | Finding |
 | --- | --- |
-| `app/index.tsx` | Rendered a loading screen; `useAuthGate` replaced signed-out users to `/login`. The approved photo `WelcomeScreen` was no longer reachable. |
-| `resolveAuthRedirect` | Single policy for session-based redirects. Signed-out on `(app)` / `(tabs)` / `index` → `/login`. Signed-in on `login` / `register` / `forgot-password` / `index` → `/(app)` (or `/join/<token>`). |
-| `AppHomeHubScreen` | Single place that decides dashboard vs create vs selector for signed-in users. |
-| Sign-out | Every sign-out button replaces to `/login`. |
-| Pending actions | Only the Planning Team invite token is preserved across sign-in (`pendingTeamInvite`). |
+| `app/index.tsx` | Photo `WelcomeScreen` for signed-out users; `useAuthGate` sends signed-in users to `/(app)`. |
+| `resolveAuthRedirect` | Public Explore (`explore-vendors`) is open to everyone. Signed-out on `(app)` → `/login`. |
+| Pending actions | Team invite token + Explore vendor action (`pendingVendorAction`) survive sign-in. |
 
-### Marketplace (all inside `/(app)/weddings/[weddingId]/vendors`)
+### Marketplace reuse
 
-| Piece | Reusable for Explore |
-| --- | --- |
-| `vendorService.listVendorCategories` | Yes |
-| `vendorService.listPublishedVendors` | Partly — unbounded, `select('*')`, client-side filters |
-| `vendorService.getVendorProfile` | Yes after column changes |
-| `VendorCard`, `VendorFilterBar`, `SearchField`, `MarketplaceSkeleton`, `VendorProfileSkeleton`, `EmptyState` | Yes |
-| `VendorProfileScreen` | Body reusable; screen itself is wedding-scoped (save / inquiry) |
-| `InquiryScreen`, `saveVendorToWedding` | Yes — authenticated actions after sign-in |
-| React Query hooks in `vendors/queries.ts` | Keys are user-scoped and disabled when signed out |
+`VendorCard`, categories, `SearchField`, skeletons, `vendorQueries` shared reads, inquiry / save flows.
 
-### Database (shared with `kiburan-vendor`)
+### Database
 
-Tables: `vendors`, `vendor_categories`, `vendor_category_memberships`, `vendor_services`, `vendor_packages`, `vendor_media`, `vendor_availability`, `vendor_reviews`.
+Public visibility (RLS for `anon`): published + verified vendors; active services/packages; media; published reviews.
 
-Public visibility rule (already enforced by RLS for `anon`):
-`vendors.listing_status = 'published' AND vendors.verification_status = 'verified'`, active services and packages of such vendors, their media / availability, and reviews with `status = 'published'`.
+### Security gap (addressed by grants migration)
 
-Not in the schema (so not shown): featured flag, popularity metric, event-type tagging on vendors, booking requests from couples, direct messages. Inquiries are the only couple → vendor message.
+RLS is row-level only. Migration `20261108160000_public_vendor_column_grants.sql` revokes table `SELECT` for `anon` on sensitive columns (`phone`, `email`, `address`, `owner_user_id`, availability `notes`, review `wedding_id` / `reviewer_id`).
 
-### Security gap found
+**Remaining ops note:** migration must be applied on every environment (local done; staging/production need a reviewed deploy). Do not ship a service-role key in the mobile app.
 
-RLS is row-level only. The `anon` role had table-level `SELECT` on `vendors`, `vendor_availability` and `vendor_reviews`, so anyone with the public anon key could read, for every published vendor:
+### Reviewed security gaps (do not silently change RLS)
 
-- `vendors.phone`, `vendors.email`, `vendors.address`, `vendors.owner_user_id`
-- `vendor_availability.notes` (vendor-internal notes)
-- `vendor_reviews.wedding_id`, `vendor_reviews.reviewer_id`
+Row RLS is sufficient for published+verified browse. Open items for a future reviewed migration:
 
-## 2. Changes
+| Gap | Severity | Detail |
+| --- | --- | --- |
+| Authenticated column privileges | Medium | Signed-in clients can still `SELECT` `phone` / `email` / `address` / `owner_user_id` on published vendors; availability `notes`; review `wedding_id` / `reviewer_id`. Anon grants were tightened; `authenticated` was intentionally unchanged. |
+| `vendor-public` storage SELECT | Medium | Bucket policy allows public reads by path without checking `is_public_vendor` — draft assets under a known `{vendor_id}/…` path could be downloadable. |
+| Published reviews after unpublish | Low–Med | `vendor_reviews_select` checks `status = 'published'` only, not vendor public state. |
+| Hosted deploy drift | High if lagging | Confirm `20261108160000` is applied on staging/production before shipping Explore. |
 
-### Migration `20261108160000_public_vendor_column_grants.sql`
+Proposed reviewed follow-ups (document only until product signs off): mirror anon column grants for non-team authenticated reads (or expose contact via security-definer RPC after inquiry); optionally require `private.is_public_vendor(vendor_id)` on published reviews; optionally gate `vendor-public` storage to public vendors; add SQL tests for the matrix.
 
-Grants only — no tables, columns, or policies change. For the `anon` role:
+## 2. Redesign (this branch)
 
-- `vendors`: revoke table `SELECT`; grant `SELECT` on public columns only (no `phone`, `email`, `address`, `owner_user_id`).
-- `vendor_availability`: same, without `notes`.
-- `vendor_reviews`: same, without `wedding_id`, `reviewer_id`.
+### Explore screen (`ExploreVendorsScreen`)
 
-`authenticated` is unchanged, so the vendor app and signed-in couples keep their current reads. Shared client queries use explicit column lists so they work for both roles.
+- Compact header: Kiburan brand left, Sign in / My plans right (no in-app floating settings; Expo Go gear is the host debug menu).
+- Intro: “Explore vendors” + “Discover trusted vendors… Browse freely — no account needed.”
+- Search with clear control; categories remain horizontal chips.
+- Location + price moved into `VendorFiltersSheet` (Apply / Reset + active count on Filters).
+- Vendor-first results with count + A–Z / Newest sort; services kept as a secondary horizontal rail.
+- Responsive: single-column rows on phones; two-column grid on wider layouts (≥520).
 
-### Client
+### Cards and public profile
 
-- `/` shows the photo welcome screen to signed-out users with Explore Vendors, Start Planning, Sign In. Signed-in users never stay on `/`; sign-out still goes to `/login`.
-- `/explore` and `/explore/vendors/[vendorId]` are public routes.
-- Explore uses server-side paging, search, and filters (`searchPublicVendors`, `listPublicServices`) with public query keys.
-- Guest actions (Send inquiry, Save to my plan, Ask about this service) store a pending intent, go to sign-in, and resume through `/(app)/vendor-action` after authentication (creating a celebration first when the user has none).
+- Vendor name is primary; Verified badge (public listings are RLS-gated to verified).
+- Category, location, real service titles, starting price, and ratings only when data exists.
+- Public profile unchanged in route; shared `VendorProfileDetails` shows Verified, services, packages, gallery.
 
-### Shared reads
+### Guest → auth flow
 
-`services/vendorQueries.ts` is the single implementation for marketplace reads, used by:
+1. Guest browses `/explore-vendors` and `/explore-vendors/[vendorId]` without auth.
+2. Save / inquire stores `pendingVendorAction`, opens login/register with an explanation.
+3. After auth, `AppHomeHubScreen` → `/(app)/vendor-action` resumes once (cleared before run; save is idempotent).
 
-- the signed-in marketplace (`vendorService.listPublishedVendors`, now bounded to 200 rows)
-- the vendor profile (`vendorService.getVendorProfile`)
-- Explore hooks (`usePublic*` in `queries.ts`)
-- integration tests
+## 3. Tests
 
-Profiles only resolve for published and verified vendors. Reviewer names are no longer loaded.
-
-### Resume rules (`resolveVendorActionStep`)
-
-| Situation | Result |
-| --- | --- |
-| No celebration | Create one; the "celebration created" screen offers "Continue with <vendor>" |
-| No celebration but pending team invites | Choose between creating a celebration and reviewing invites |
-| One celebration | Run immediately |
-| Several celebrations | Pick one |
-| View-only access | Explain; nothing is written |
-
-The stored action is cleared before it runs. Saving is idempotent. Inquiries still need the user to press Send.
-
-### Not shown (no backend)
-
-Featured badges, popularity ranking, rating or availability filters, event-type filters, booking, and messaging.
-
-### Tests
-
-- Unit: `resolveAuthRedirect`, `resolveAppHomeDestination`, `resolveVendorActionStep`, `pendingVendorAction`, `vendorQueries` helpers, public query keys.
+- Unit: `resolveAuthRedirect`, `resolveAppHomeDestination`, `resolveVendorActionStep`, `pendingVendorAction`, `vendorQueries` helpers (incl. `serviceTitles`), public query keys.
 - Integration (local Supabase, anon client): `publicExplore.integration.test.ts`.

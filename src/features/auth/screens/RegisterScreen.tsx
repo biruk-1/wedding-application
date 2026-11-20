@@ -17,6 +17,7 @@ import {
   registerSchema,
 } from '@/features/auth/validation/authSchemas';
 import { loadPendingTeamInvite } from '@/features/team/services/pendingTeamInvite';
+import { peekPendingVendorAction } from '@/features/vendors/services/pendingVendorAction';
 import { spacing } from '@/theme/spacing';
 
 export function RegisterScreen() {
@@ -32,6 +33,7 @@ export function RegisterScreen() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const hint = typeof emailHint === 'string' ? emailHint : null;
+  const vendorAction = peekPendingVendorAction();
 
   async function onSubmit() {
     setFormError(null);
@@ -68,8 +70,28 @@ export function RegisterScreen() {
   return (
     <Screen scroll>
       <StatusBar style="dark" />
-      <Header title="Create account" subtitle="Join Kiburan to plan together" showBack />
+      <Header
+        title="Create account"
+        subtitle={
+          vendorAction
+            ? 'Create an account to continue with this vendor'
+            : 'Join Kiburan to plan together'
+        }
+        showBack
+      />
       <View style={styles.form}>
+        {vendorAction ? (
+          <View style={styles.pendingNotice}>
+            <AppText variant="bodyMedium" color="heading">
+              Account needed for this step
+            </AppText>
+            <AppText variant="caption" color="textMuted">
+              {vendorAction.kind === 'save'
+                ? `After you register, we'll help you save ${vendorAction.vendorName || 'this vendor'} to your celebration.`
+                : `After you register, we'll return you to ${vendorAction.vendorName || 'this vendor'} to finish your inquiry.`}
+            </AppText>
+          </View>
+        ) : null}
         {hint ? (
           <AppText variant="caption" color="textMuted">
             Register with the invited address {hint}
@@ -142,6 +164,9 @@ export function RegisterScreen() {
 const styles = StyleSheet.create({
   form: {
     gap: spacing.lg,
+  },
+  pendingNotice: {
+    gap: spacing.xs,
   },
   info: {
     textAlign: 'center',

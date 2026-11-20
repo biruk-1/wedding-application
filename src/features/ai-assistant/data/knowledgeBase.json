@@ -1,0 +1,152 @@
+{
+  "greeting": "Hi! I'm Kiburan AI. Ask me about checklists, vendors, budget, guests, or your timeline — I'll answer from Kiburan's wedding planning guides.",
+  "fallback": "I don't have a precise answer for that yet. Try asking about photography, venue, checklist, budget, guests, vendors, or what's next on your timeline.",
+  "suggestions": [
+    {
+      "id": "photography",
+      "label": "Focus on photography",
+      "icon": "camera-outline",
+      "query": "Focus on photography"
+    },
+    {
+      "id": "checklist",
+      "label": "Show full checklist",
+      "icon": "checkbox-outline",
+      "query": "Show full checklist"
+    },
+    {
+      "id": "timeline",
+      "label": "What's next in timeline?",
+      "icon": "calendar-outline",
+      "query": "What's next in timeline?"
+    }
+  ],
+  "entries": [
+    {
+      "id": "photography",
+      "questions": [
+        "Focus on photography",
+        "photography",
+        "photographer",
+        "photos",
+        "camera",
+        "wedding photos"
+      ],
+      "answer": "For photography, start here:\n1. Decide traditional vs modern coverage (and whether you need a second shooter).\n2. Shortlist verified photographers on Explore Vendors.\n3. Ask about package hours, edited photo count, and delivery time.\n4. Save favorites to your plan, then send an inquiry with your date and city.\n5. Confirm the booking once you have a quote you like."
+    },
+    {
+      "id": "checklist",
+      "questions": [
+        "Show full checklist",
+        "checklist",
+        "tasks",
+        "to do",
+        "todo list",
+        "what should I do"
+      ],
+      "answer": "Your checklist lives under Tasks on the bottom menu. Typical early priorities:\n1. Confirm ceremony venue and date.\n2. Book photography and videography.\n3. Choose attire and beauty vendors.\n4. Build the guest list and send invites.\n5. Lock catering and cake.\nOpen Tasks anytime to mark items done and assign them to your planning team."
+    },
+    {
+      "id": "timeline",
+      "questions": [
+        "What's next in timeline?",
+        "timeline",
+        "schedule",
+        "what's next",
+        "what is next",
+        "upcoming"
+      ],
+      "answer": "Check Schedule for your celebration day flow. A simple next-step order:\n1. Confirm ceremony venue and start time.\n2. Book photography for the full day.\n3. Finalize the guest list and seating needs.\n4. Align catering, music, and décor with the timeline.\n5. Share the schedule with your planning team.\nOpen Schedule from Home shortcuts or More to edit times."
+    },
+    {
+      "id": "vendors",
+      "questions": [
+        "vendors",
+        "find vendors",
+        "explore vendors",
+        "hire",
+        "caterer",
+        "florist",
+        "venue"
+      ],
+      "answer": "Browse verified vendors from Home → Vendors, or from the public Explore Vendors page before you sign in.\n• Filter by category, city, and price.\n• Open a vendor profile to see services and packages.\n• Save vendors or send inquiries from your celebration plan.\nSaving and messaging need an account — browsing does not."
+    },
+    {
+      "id": "budget",
+      "questions": [
+        "budget",
+        "cost",
+        "how much",
+        "spending",
+        "money",
+        "price"
+      ],
+      "answer": "Open Budget from More to track planned vs spent amounts.\nTips:\n1. Set a total celebration budget first.\n2. Allocate by category (venue, food, photo, attire).\n3. Update when you accept a vendor quote.\n4. Review remaining balance before booking extras.\nKiburan helps you see gaps early so surprises stay small."
+    },
+    {
+      "id": "guests",
+      "questions": [
+        "guests",
+        "invitations",
+        "invite",
+        "rsvp",
+        "guest list"
+      ],
+      "answer": "Manage guests under Guests:\n1. Add people and group them (family, friends, colleagues).\n2. Send invitations when you're ready.\n3. Track RSVPs as they come in.\n4. Use counts for catering and seating.\nYou can also open Guests from Home shortcuts."
+    },
+    {
+      "id": "team",
+      "questions": [
+        "team",
+        "collaborator",
+        "invite planner",
+        "share access",
+        "who can edit"
+      ],
+      "answer": "Invite planning partners from Home → Team.\n• Owners and editors can update tasks, guests, and vendors.\n• View-only members can follow along without changing data.\n• Pending invites appear for people who haven't joined yet.\nShare one celebration so everyone plans together."
+    },
+    {
+      "id": "ethiopian",
+      "questions": [
+        "ethiopian",
+        "traditional",
+        "habesha",
+        "kemis",
+        "cultural"
+      ],
+      "answer": "Kiburan is built for Ethiopian celebrations — traditional, modern, and fusion styles.\n• Pick your visual style in Settings.\n• Look for vendors who understand habesha attire, food, and ceremony timing.\n• Use the timeline to balance religious ceremony, photos, and reception.\nExplore Vendors to find verified partners familiar with Ethiopian weddings."
+    },
+    {
+      "id": "save_vendor",
+      "questions": [
+        "save vendor",
+        "shortlist",
+        "favorite vendor",
+        "add vendor"
+      ],
+      "answer": "On a vendor profile, tap Save to my plan.\nIf you're signed out, Kiburan asks you to sign in, then returns you to finish saving.\nSaved vendors stay on your celebration so your team can compare and inquire together."
+    },
+    {
+      "id": "inquiry",
+      "questions": [
+        "inquiry",
+        "contact vendor",
+        "message vendor",
+        "ask vendor",
+        "send inquiry"
+      ],
+      "answer": "From a vendor profile, tap Send inquiry.\nInclude your celebration date, city, guest count, and what you need.\nThe vendor can reply with a quote. This is not a booking until you accept terms and confirm — use inquiries to compare options first."
+    },
+    {
+      "id": "hello",
+      "questions": [
+        "hello",
+        "hi",
+        "hey",
+        "good morning",
+        "good afternoon"
+      ],
+      "answer": "Hello! I'm here to help with your Kiburan celebration plan. Ask about photography, checklist, timeline, vendors, budget, or guests — or tap a suggestion below."
+    }
+  ]
+}

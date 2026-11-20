@@ -23,6 +23,7 @@ function vendor(partial: Partial<VendorListItem> & Pick<VendorListItem, 'id' | '
     cover_url: null,
     categories: [],
     startingPrice: null,
+    serviceTitles: [],
     ...partial,
   };
 }

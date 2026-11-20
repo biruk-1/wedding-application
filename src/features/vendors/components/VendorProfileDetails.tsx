@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedBackground } from '@/components/theme/ThemedBackground';
 import { AppText } from '@/components/ui/AppText';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import type { VendorProfile } from '@/features/vendors/types';
@@ -67,7 +68,15 @@ export function VendorProfileDetails({
         {notice}
 
         <Card style={styles.section} ornament>
-          <AppText variant="label">Overview</AppText>
+          <View style={styles.overviewHeader}>
+            <AppText variant="label">Overview</AppText>
+            <Badge label="Verified" tone="success" />
+          </View>
+          {profile.categories.length > 0 ? (
+            <AppText variant="caption" color="primary">
+              {profile.categories.map((c) => c.name_en).join(' · ')}
+            </AppText>
+          ) : null}
           {location ? (
             <AppText variant="caption" color="textMuted">
               {location}
@@ -224,7 +233,7 @@ function createStyles(colors: AppColors) {
   return StyleSheet.create({
     hero: {
       width: '100%',
-      height: 200,
+      height: 220,
       borderRadius: radii.lg,
       backgroundColor: colors.surfaceMuted,
       marginBottom: spacing.lg,
@@ -240,6 +249,12 @@ function createStyles(colors: AppColors) {
     },
     section: {
       gap: spacing.sm,
+    },
+    overviewHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.md,
     },
     ratingRow: {
       flexDirection: 'row',

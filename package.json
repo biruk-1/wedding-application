@@ -65,7 +65,8 @@
     "db:reset": "node ./scripts/supabase.mjs db reset",
     "db:status": "node ./scripts/supabase.mjs status",
     "db:types": "node ./scripts/gen-db-types.mjs",
-    "db:test:security": "node ./scripts/run-security-tests.mjs"
+    "db:test:security": "node ./scripts/run-security-tests.mjs",
+    "db:seed:vendors": "node ./scripts/seed-addis-vendors.mjs --write-sql"
   },
   "private": true
 }

@@ -37,6 +37,8 @@ export type RatingSummary = { average: number; count: number };
 export type VendorListItem = PublicVendor & {
   categories: CategoryRef[];
   startingPrice: StartingPrice | null;
+  /** Active service titles for list cards (never invented). */
+  serviceTitles: string[];
   /** Only present when published reviews exist. */
   rating?: RatingSummary | null;
 };

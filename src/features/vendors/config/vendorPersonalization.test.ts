@@ -53,6 +53,7 @@ function vendor(id: string, categorySlugs: string[]): VendorListItem {
     cover_url: null,
     categories: categorySlugs.map((slug) => category(slug)),
     startingPrice: null,
+    serviceTitles: [],
   };
 }
 

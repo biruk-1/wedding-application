@@ -38,7 +38,7 @@ const CATEGORY_EMBED =
 
 const LIST_SELECT = `${PUBLIC_VENDOR_COLUMNS},
   ${CATEGORY_EMBED},
-  services:vendor_services ( base_price, currency_code, price_unit )`;
+  services:vendor_services ( title, base_price, currency_code, price_unit )`;
 
 const SERVICE_COLUMNS =
   'id, vendor_id, category_id, title, description, base_price, currency_code, price_unit';
@@ -49,7 +49,24 @@ const PROFILE_SELECT = `${PUBLIC_VENDOR_COLUMNS},
     packages:vendor_packages ( id, service_id, name, description, inclusions, price, currency_code ) )`;
 
 type RawCategories = { category: CategoryRef | CategoryRef[] | null }[] | null;
-type RawPrice = { base_price: number | null; currency_code: string; price_unit: string };
+type RawService = {
+  title: string;
+  base_price: number | null;
+  currency_code: string;
+  price_unit: string;
+};
+
+/** Up to three real service titles for list cards. */
+export function serviceTitles(services: Pick<RawService, 'title'>[] | null): string[] {
+  const titles: string[] = [];
+  for (const service of services ?? []) {
+    const title = service.title?.trim();
+    if (!title || titles.includes(title)) continue;
+    titles.push(title);
+    if (titles.length >= 3) break;
+  }
+  return titles;
+}
 
 function one<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -62,7 +79,7 @@ function flattenCategories(raw: RawCategories): CategoryRef[] {
     .filter((category): category is CategoryRef => Boolean(category));
 }
 
-export function startingPrice(services: RawPrice[] | null): StartingPrice | null {
+export function startingPrice(services: Pick<RawService, 'base_price' | 'currency_code' | 'price_unit'>[] | null): StartingPrice | null {
   let best: StartingPrice | null = null;
   for (const service of services ?? []) {
     if (service.base_price == null) continue;
@@ -250,9 +267,12 @@ export async function fetchVendorPage(
   );
   if (error) return { data: null, error };
 
-  const rows = (data ?? []) as unknown as (Omit<VendorListItem, 'categories' | 'startingPrice'> & {
+  const rows = (data ?? []) as unknown as (Omit<
+    VendorListItem,
+    'categories' | 'startingPrice' | 'serviceTitles'
+  > & {
     categories: RawCategories;
-    services: RawPrice[] | null;
+    services: RawService[] | null;
   })[];
   const pageRows = rows.slice(0, VENDOR_PAGE_SIZE);
 
@@ -277,6 +297,7 @@ export async function fetchVendorPage(
       logo_url: row.logo_url,
       categories: flattenCategories(row.categories),
       startingPrice: startingPrice(row.services),
+      serviceTitles: serviceTitles(row.services),
       rating: ratings.data.get(row.id) ?? null,
     }),
   );
@@ -308,15 +329,19 @@ export async function fetchPublishedVendors(
     signal,
   );
   if (error) return { data: null, error };
-  const rows = (data ?? []) as unknown as (Omit<VendorListItem, 'categories' | 'startingPrice'> & {
+  const rows = (data ?? []) as unknown as (Omit<
+    VendorListItem,
+    'categories' | 'startingPrice' | 'serviceTitles'
+  > & {
     categories: RawCategories;
-    services: RawPrice[] | null;
+    services: RawService[] | null;
   })[];
   return {
     data: rows.map(({ categories, services, ...vendor }) => ({
       ...vendor,
       categories: flattenCategories(categories),
       startingPrice: startingPrice(services),
+      serviceTitles: serviceTitles(services),
     })),
     error: null,
   };

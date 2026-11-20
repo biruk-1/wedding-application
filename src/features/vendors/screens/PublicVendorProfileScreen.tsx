@@ -114,7 +114,8 @@ export function PublicVendorProfileScreen() {
               {!session ? (
                 <View style={styles.hint}>
                   <AppText variant="caption" color="textMuted" style={styles.center}>
-                    {"You'll sign in or create an account first, then continue with this vendor."}
+                    Browsing is free. Saving or sending an inquiry needs an account — we will bring
+                    you back here to finish.
                   </AppText>
                 </View>
               ) : null}

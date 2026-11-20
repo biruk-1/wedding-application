@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   categoryIdsMatching,
   searchPattern,
+  serviceTitles,
   startingPrice,
   summarizeRatings,
 } from '@/features/vendors/services/vendorQueries';
@@ -38,5 +39,18 @@ describe('vendor search helpers', () => {
   it('only reports a rating when real reviews exist', () => {
     expect(summarizeRatings([])).toBeNull();
     expect(summarizeRatings([5, 4, 4])).toEqual({ average: 4.3, count: 3 });
+  });
+
+  it('summarizes unique service titles without inventing names', () => {
+    expect(serviceTitles([])).toEqual([]);
+    expect(
+      serviceTitles([
+        { title: 'Seated dinner' },
+        { title: 'Seated dinner' },
+        { title: 'Ceremony florals' },
+        { title: 'Dessert table' },
+        { title: 'Extra' },
+      ]),
+    ).toEqual(['Seated dinner', 'Ceremony florals', 'Dessert table']);
   });
 });

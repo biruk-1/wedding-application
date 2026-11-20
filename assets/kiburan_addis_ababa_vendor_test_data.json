@@ -1,0 +1,2543 @@
+{
+  "dataset_name": "Kiburan Addis Ababa Wedding Marketplace Test Data",
+  "dataset_version": "1.0.0",
+  "generated_date": "2026-11-19",
+  "currency": "ETB",
+  "default_city": "Addis Ababa",
+  "country": "Ethiopia",
+  "purpose": "Development and UI testing only. Not production vendor data.",
+  "important_data_rules": [
+    "All prices are illustrative test prices, not verified vendor quotes.",
+    "verified is false for every record. Do not display a verified badge from this dataset.",
+    "Some hotel names are listed in venue directories but do not have confirmed wedding packages.",
+    "Outdoor facilities are reported or unconfirmed unless explicitly stated. Confirm with each venue.",
+    "Records marked synthetic_demo are fictional and must not be represented as real businesses.",
+    "Replace test prices and unverified records after contacting businesses and obtaining consent."
+  ],
+  "counts": {
+    "venues": 20,
+    "other_vendors": 20,
+    "total": 40
+  },
+  "venues": [
+    {
+      "id": "venue-001",
+      "name": "Sheraton Addis, a Luxury Collection Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Taitu Street",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_confirmed",
+      "outdoor_setup": "indoor_and_outdoor",
+      "capacity_text": "850 seated / 1200 event capacity",
+      "description": "Official Marriott page confirms weddings, ballroom, courtyards and fountain backdrop.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.marriott.com/en-us/hotels/addlc-sheraton-addis-a-luxury-collection-hotel-addis-ababa/events/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-002",
+      "name": "Hyatt Regency Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Meskel Square area",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_confirmed",
+      "outdoor_setup": "indoor; outdoor not confirmed",
+      "capacity_text": "Up to 400 guests",
+      "description": "Official Hyatt page lists a 468 sq m ballroom for 400 guests.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.hyatt.com/hyatt-regency/en-US/addra-hyatt-regency-addis-ababa/weddings",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-003",
+      "name": "Ethiopian Skylight Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Airport Road, Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor and outdoor facilities; wedding setup to confirm",
+      "capacity_text": "Large event venue; capacity to confirm",
+      "description": "Major events hotel; confirm wedding configuration and pricing directly.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://ethiopianskylighthotel.com/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-004",
+      "name": "Elilly International Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Kazanchis",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_reported",
+      "outdoor_setup": "indoor and garden/outdoor reported",
+      "capacity_text": "Capacity to confirm",
+      "description": "Local wedding guide reports indoor and outdoor spaces; verify directly.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-005",
+      "name": "Ethiopian Skies Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_reported",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed by a local wedding guide as a culturally styled venue; verify current facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-006",
+      "name": "Bole International Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_reported",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Local wedding guide lists flexible event spaces; verify packages.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-007",
+      "name": "Capital Hotel and Spa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "22 Haile Gebre Silase Street",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "garden/poolside outdoor suitability to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Hotel and event facilities listed; confirm outdoor wedding use.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.capitalhotelandspa.com/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-008",
+      "name": "Ramada Addis",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole area",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_reported",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Local wedding guide lists flexible event spaces; verify current details.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-009",
+      "name": "Best Western Plus Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "wedding_venue_reported",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Local wedding guide lists event spaces; verify wedding packages.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-010",
+      "name": "Ghion Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Ras Desta Damtew Street area",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "outdoor_wedding_venue_reported",
+      "outdoor_setup": "garden/outdoor reported; indoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Outdoor venue guide describes garden surroundings; confirm current operations.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://habeshalink.com/listing/outdoor-wedding-venues-in-addis-ababa/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-011",
+      "name": "Hilton Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Menelik II Avenue, Kirkos",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_confirmed",
+      "outdoor_setup": "indoor and outdoor",
+      "capacity_text": "Grand ballroom up to 1200 guests",
+      "description": "Official Hilton page lists outdoor spaces and a grand ballroom for up to 1200.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.hilton.com/en/hotels/addhitw-hilton-addis-ababa/events/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-012",
+      "name": "Radisson Blu Hotel Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Kazanchis Business District",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Hotel event facilities listed; wedding packages require confirmation.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.radissonhotels.com/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-013",
+      "name": "Inter Luxury Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in Addis event venue directory; confirm wedding-specific spaces.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.alladdisevents.com/addis-events-venues/",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-014",
+      "name": "Golden Tulip Addis Ababa Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm event facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.fao.org/media/docs/unfoodsystemslibraries/unfss-4/unfss-4-information-note_10-07-25.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-015",
+      "name": "Haile Grand Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm wedding facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://unfccc.int/sites/default/files/resource/LEG%2046%20information%20for%20participants_final.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-016",
+      "name": "Marriott Executive Apartments Addis Ababa",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; do not assume wedding packages.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 450000,
+        "display_price_to": 1200000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 450000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 825000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://unfccc.int/sites/default/files/resource/LEG%2046%20information%20for%20participants_final.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-017",
+      "name": "Jupiter International Hotel, Kazanchis",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Kazanchis",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm event facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.fao.org/media/docs/unfoodsystemslibraries/unfss-4/unfss-4-information-note_10-07-25.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-018",
+      "name": "Jupiter International Hotel, Bole",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm event facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.fao.org/media/docs/unfoodsystemslibraries/unfss-4/unfss-4-information-note_10-07-25.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-019",
+      "name": "The Grand Palace Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm event space and packages.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 250000,
+        "display_price_to": 550000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 250000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 400000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://www.fao.org/media/docs/unfoodsystemslibraries/unfss-4/unfss-4-information-note_10-07-25.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "venue-020",
+      "name": "Harmony Hotel",
+      "vendor_type": "venue",
+      "category": "Wedding Venues",
+      "subcategory": "Hotel / Event Venue",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Family Celebration"
+      ],
+      "venue_status": "event_venue_wedding_to_confirm",
+      "outdoor_setup": "indoor; outdoor to confirm",
+      "capacity_text": "Capacity to confirm",
+      "description": "Listed in institutional hotel directory; confirm wedding-specific facilities.",
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 80000,
+        "display_price_to": 350000,
+        "price_unit": "event_estimate",
+        "is_sample_test_price": true,
+        "note": "Illustrative test range only, not a verified hotel quote."
+      },
+      "package_examples": [
+        {
+          "name": "Venue Only",
+          "price_etb": 80000,
+          "includes": [
+            "Event space",
+            "Basic venue coordination"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Venue and Reception",
+          "price_etb": 215000,
+          "includes": [
+            "Event space",
+            "Basic setup",
+            "Reception service"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "verification_note": "Wedding availability, outdoor access, capacity and pricing must be confirmed directly.",
+      "source_url": "https://unfccc.int/sites/default/files/resource/LEG%2046%20information%20for%20participants_final.pdf",
+      "tags": [
+        "wedding",
+        "event-venue",
+        "addis-ababa"
+      ]
+    }
+  ],
+  "vendors": [
+    {
+      "id": "vendor-001",
+      "name": "Hiloga Wedding Planners",
+      "vendor_type": "service_provider",
+      "category": "Wedding Planner",
+      "subcategory": "Wedding Planner",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "K-Kare Building",
+      "description": "Wedding planning and day-of coordination",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 12000,
+        "display_price_to": 65000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 12000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 38500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 65000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "wedding-planner",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-002",
+      "name": "Liya Gole Salon",
+      "vendor_type": "service_provider",
+      "category": "Bridal Makeup",
+      "subcategory": "Bridal Makeup",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Olympia Dembele Building",
+      "description": "Bridal makeup, hair styling and beauty services",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 5000,
+        "display_price_to": 18000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 5000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 11500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 18000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "bridal-makeup",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-003",
+      "name": "Mentwab Beauty",
+      "vendor_type": "service_provider",
+      "category": "Bridal Makeup",
+      "subcategory": "Bridal Makeup",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bedria City Mall",
+      "description": "Bridal and multi-ceremony makeup services",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 4500,
+        "display_price_to": 16000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 4500,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 10250,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 16000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "bridal-makeup",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-004",
+      "name": "RGB Pictures",
+      "vendor_type": "service_provider",
+      "category": "Photography and Video",
+      "subcategory": "Photography and Video",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Wedding photography, video coverage and cinematic edits",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 18000,
+        "display_price_to": 85000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 18000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 51500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 85000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "photography-video",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-005",
+      "name": "Zenach Studio - Ethiopia",
+      "vendor_type": "service_provider",
+      "category": "Photography and Video",
+      "subcategory": "Photography and Video",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Selam City Mall, Bole",
+      "description": "Wedding photography, portraits and video coverage",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 20000,
+        "display_price_to": 95000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 20000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 57500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 95000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "photography-video",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-006",
+      "name": "Golden Catering Services",
+      "vendor_type": "service_provider",
+      "category": "Catering",
+      "subcategory": "Catering",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Wedding catering, food service staff and event setup",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 650,
+        "display_price_to": 1600,
+        "price_unit": "per_guest",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 650,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 1125,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 1600,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "catering",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-007",
+      "name": "Cravings Catering",
+      "vendor_type": "service_provider",
+      "category": "Catering",
+      "subcategory": "Catering",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Sunshine Building, Jomo Kenyatta Street",
+      "description": "Event catering and custom wedding menus",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 700,
+        "display_price_to": 1800,
+        "price_unit": "per_guest",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 700,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 1250,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 1800,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "catering",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-008",
+      "name": "Edbel Event Zone",
+      "vendor_type": "service_provider",
+      "category": "Traditional Decor and Event Planning",
+      "subcategory": "Traditional Decor and Event Planning",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Sarbet",
+      "description": "Wedding, Shemgelena, Cheg, Nikah and celebration decoration",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 12000,
+        "display_price_to": 80000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 12000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 46000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 80000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "listed_business",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "traditional-decor-event-planning",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-009",
+      "name": "Sunshine Dicor",
+      "vendor_type": "service_provider",
+      "category": "Decor and Styling",
+      "subcategory": "Decor and Styling",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Yeka",
+      "description": "Wedding and celebration decoration",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 5000,
+        "display_price_to": 45000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 5000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 25000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 45000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "marketplace_listing",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": "https://jiji.com.et/addis-ababa/wedding-venues-and-services",
+      "tags": [
+        "wedding",
+        "decor-styling",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-010",
+      "name": "Yaho Decore",
+      "vendor_type": "service_provider",
+      "category": "Traditional Decor and Event Planning",
+      "subcategory": "Traditional Decor and Event Planning",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Lideta",
+      "description": "Engagement, wedding and celebration decoration",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 8500,
+        "display_price_to": 55000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 8500,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 31750,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 55000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "marketplace_listing",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": "https://jiji.com.et/addis-ababa/wedding-venues-and-services",
+      "tags": [
+        "wedding",
+        "traditional-decor-event-planning",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-011",
+      "name": "Alpha Events / Alpha Decor",
+      "vendor_type": "service_provider",
+      "category": "Decor and Event Planning",
+      "subcategory": "Decor and Event Planning",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Bole",
+      "description": "Wedding, birthday and baby shower decoration",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 15000,
+        "display_price_to": 90000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 15000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 52500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 90000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "marketplace_listing",
+      "verification_note": "Public listing found; confirm details.",
+      "source_url": "https://jiji.com.et/addis-ababa/wedding-venues-and-services",
+      "tags": [
+        "wedding",
+        "decor-event-planning",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-012",
+      "name": "Habesha Attire Studio",
+      "vendor_type": "service_provider",
+      "category": "Traditional Attire",
+      "subcategory": "Traditional Attire",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Habesha kemis, groom outfit, netela and traditional styling",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 6000,
+        "display_price_to": 32000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 6000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 19000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 32000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "traditional-attire",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-013",
+      "name": "Jebena Coffee Ceremony Hosts",
+      "vendor_type": "service_provider",
+      "category": "Coffee Ceremony",
+      "subcategory": "Coffee Ceremony",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Traditional buna setup, jebena, sini cups, incense and hosts",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 8000,
+        "display_price_to": 22000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 8000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 15000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 22000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "coffee-ceremony",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-014",
+      "name": "Bloom Decor Addis",
+      "vendor_type": "service_provider",
+      "category": "Florist and Decor",
+      "subcategory": "Florist and Decor",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Bridal bouquet, ceremony flowers and reception floral styling",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 2500,
+        "display_price_to": 45000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 2500,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 23750,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 45000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "florist-decor",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-015",
+      "name": "Addis Harmony Live Band",
+      "vendor_type": "service_provider",
+      "category": "Music and Entertainment",
+      "subcategory": "Music and Entertainment",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Live band, traditional instruments and cultural dance",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 25000,
+        "display_price_to": 95000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 25000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 60000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 95000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "music-entertainment",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-016",
+      "name": "Luxe Letterpress Addis",
+      "vendor_type": "service_provider",
+      "category": "Invitations and Printing",
+      "subcategory": "Invitations and Printing",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Printed invitations, menus, seating cards and signage",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 140,
+        "display_price_to": 28000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 140,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 14070,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 28000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "invitations-printing",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-017",
+      "name": "Sugar and Rose Cakes",
+      "vendor_type": "service_provider",
+      "category": "Wedding Cakes",
+      "subcategory": "Wedding Cakes",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Tiered wedding cakes and dessert tables",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 8000,
+        "display_price_to": 30000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 8000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 19000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 30000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "wedding-cakes",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-018",
+      "name": "Addis Royal Bridal Convoy",
+      "vendor_type": "service_provider",
+      "category": "Wedding Transport",
+      "subcategory": "Wedding Transport",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Wedding car hire and bridal convoy packages",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 18000,
+        "display_price_to": 90000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 18000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 54000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 90000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "wedding-transport",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-019",
+      "name": "Tibeb Traditional Setup",
+      "vendor_type": "service_provider",
+      "category": "Traditional Decor and Rental",
+      "subcategory": "Traditional Decor and Rental",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "Tibeb-inspired backdrop, mesob display, traditional seating and props",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 18000,
+        "display_price_to": 75000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 18000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 46500,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 75000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "traditional-decor-rental",
+        "addis-ababa"
+      ]
+    },
+    {
+      "id": "vendor-020",
+      "name": "Melody Sound and Lighting",
+      "vendor_type": "service_provider",
+      "category": "Sound and Lighting",
+      "subcategory": "Sound and Lighting",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "location_text": "Addis Ababa",
+      "description": "DJ, PA system, stage lighting and dance-floor setup",
+      "event_types": [
+        "Wedding",
+        "Shemgelena",
+        "Qelekel",
+        "Engagement",
+        "Baby Shower",
+        "Birthday"
+      ],
+      "pricing": {
+        "currency": "ETB",
+        "display_price_from": 12000,
+        "display_price_to": 60000,
+        "price_unit": "package_or_service",
+        "is_sample_test_price": true,
+        "note": "Illustrative test price. Confirm scope, date, travel and final quote."
+      },
+      "package_examples": [
+        {
+          "name": "Basic",
+          "price_etb": 12000,
+          "includes": [
+            "Basic service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Standard",
+          "price_etb": 36000,
+          "includes": [
+            "Expanded service scope"
+          ],
+          "is_sample_test_price": true
+        },
+        {
+          "name": "Premium",
+          "price_etb": 60000,
+          "includes": [
+            "Premium service scope",
+            "Custom options subject to quote"
+          ],
+          "is_sample_test_price": true
+        }
+      ],
+      "verified": false,
+      "source_status": "synthetic_demo",
+      "verification_note": "Fictional demo vendor for UI testing only. Not a real business.",
+      "source_url": null,
+      "tags": [
+        "wedding",
+        "sound-lighting",
+        "addis-ababa"
+      ]
+    }
+  ],
+  "suggested_app_filters": {
+    "categories": [
+      "Wedding Venues",
+      "Traditional Decor and Event Planning",
+      "Bridal Makeup",
+      "Photography and Video",
+      "Catering",
+      "Traditional Attire",
+      "Coffee Ceremony",
+      "Florist and Decor",
+      "Music and Entertainment",
+      "Invitations and Printing",
+      "Wedding Cakes",
+      "Wedding Transport",
+      "Sound and Lighting"
+    ],
+    "locations": [
+      "Any city",
+      "Bole",
+      "Kazanchis",
+      "Lideta",
+      "Sarbet",
+      "Yeka",
+      "Addis Ababa"
+    ],
+    "price_bands_etb": [
+      {
+        "label": "Under 25k",
+        "min": 0,
+        "max": 25000
+      },
+      {
+        "label": "25k-75k",
+        "min": 25000,
+        "max": 75000
+      },
+      {
+        "label": "75k-150k",
+        "min": 75000,
+        "max": 150000
+      },
+      {
+        "label": "150k+",
+        "min": 150000,
+        "max": null
+      }
+    ],
+    "event_types": [
+      "Wedding",
+      "Shemgelena",
+      "Qelekel",
+      "Engagement",
+      "Baby Shower",
+      "Birthday",
+      "Anniversary",
+      "Graduation",
+      "Other Celebration"
+    ]
+  },
+  "sources": [
+    {
+      "name": "Sheraton Addis official events and weddings",
+      "url": "https://www.marriott.com/en-us/hotels/addlc-sheraton-addis-a-luxury-collection-hotel-addis-ababa/events/"
+    },
+    {
+      "name": "Hyatt Regency Addis Ababa weddings",
+      "url": "https://www.hyatt.com/hyatt-regency/en-US/addra-hyatt-regency-addis-ababa/weddings"
+    },
+    {
+      "name": "Hilton Addis Ababa events",
+      "url": "https://www.hilton.com/en/hotels/addhitw-hilton-addis-ababa/events/"
+    },
+    {
+      "name": "Outdoor wedding venues guide",
+      "url": "https://habeshalink.com/listing/outdoor-wedding-venues-in-addis-ababa/"
+    },
+    {
+      "name": "Addis wedding venue guide",
+      "url": "https://enkutatashevents.com/blog/top-wedding-venues-addis-ababa"
+    },
+    {
+      "name": "Addis event venues directory",
+      "url": "https://www.alladdisevents.com/addis-events-venues/"
+    },
+    {
+      "name": "Venue rental directory",
+      "url": "https://www.goafricaonline.com/et/directory/venue-rental-reception-halls"
+    },
+    {
+      "name": "Wedding services marketplace listings",
+      "url": "https://jiji.com.et/addis-ababa/wedding-venues-and-services"
+    },
+    {
+      "name": "FAO Addis hotel directory",
+      "url": "https://www.fao.org/media/docs/unfoodsystemslibraries/unfss-4/unfss-4-information-note_10-07-25.pdf"
+    }
+  ]
+}

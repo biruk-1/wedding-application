@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -26,6 +27,10 @@ export function VendorFilterBar({
   hasActiveFilters,
   hideSearch = false,
   priceLabel = 'Starting price',
+  /** Explore mode: categories only; location/price live in VendorFiltersSheet. */
+  categoriesOnly = false,
+  filterCount = 0,
+  onOpenFilters,
 }: {
   filters: VendorFilters;
   onChange: (next: VendorFilters) => void;
@@ -33,9 +38,11 @@ export function VendorFilterBar({
   cities: string[];
   onReset: () => void;
   hasActiveFilters: boolean;
-  /** When true, omit the built-in search field (parent uses SearchField). */
   hideSearch?: boolean;
   priceLabel?: string;
+  categoriesOnly?: boolean;
+  filterCount?: number;
+  onOpenFilters?: () => void;
 }) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -52,9 +59,29 @@ export function VendorFilterBar({
         />
       ) : null}
 
-      <AppText variant="caption" color="textMuted">
-        Categories
-      </AppText>
+      <View style={styles.categoriesHeader}>
+        <AppText variant="caption" color="textMuted">
+          Categories
+        </AppText>
+        {categoriesOnly && onOpenFilters ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              filterCount > 0 ? `Filters, ${filterCount} active` : 'Open filters'
+            }
+            onPress={onOpenFilters}
+            style={[styles.filtersBtn, filterCount > 0 && styles.filtersBtnActive]}>
+            <Ionicons
+              name="options-outline"
+              size={16}
+              color={filterCount > 0 ? colors.success : colors.textMuted}
+            />
+            <AppText variant="caption" color={filterCount > 0 ? 'success' : 'textMuted'}>
+              Filters{filterCount > 0 ? ` · ${filterCount}` : ''}
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
         <Pressable
           onPress={() => onChange({ ...filters, categoryId: null })}
@@ -91,7 +118,7 @@ export function VendorFilterBar({
         })}
       </ScrollView>
 
-      {cities.length > 0 ? (
+      {!categoriesOnly && cities.length > 0 ? (
         <>
           <AppText variant="caption" color="textMuted">
             Location
@@ -127,36 +154,40 @@ export function VendorFilterBar({
         </>
       ) : null}
 
-      <AppText variant="caption" color="textMuted">
-        {priceLabel}
-      </AppText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-        {PRICE_PRESETS.map((preset) => {
-          const selected =
-            filters.minPrice === preset.min && filters.maxPrice === preset.max;
-          return (
-            <Pressable
-              key={preset.label}
-              onPress={() =>
-                onChange({
-                  ...filters,
-                  minPrice: preset.min,
-                  maxPrice: preset.max,
-                })
-              }
-              style={[styles.chipAlt, selected && styles.chipSelectedAlt]}
-              accessibilityRole="button">
-              <AppText
-                variant="caption"
-                style={{ color: selected ? colors.success : colors.textMuted }}>
-                {preset.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {!categoriesOnly ? (
+        <>
+          <AppText variant="caption" color="textMuted">
+            {priceLabel}
+          </AppText>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            {PRICE_PRESETS.map((preset) => {
+              const selected =
+                filters.minPrice === preset.min && filters.maxPrice === preset.max;
+              return (
+                <Pressable
+                  key={preset.label}
+                  onPress={() =>
+                    onChange({
+                      ...filters,
+                      minPrice: preset.min,
+                      maxPrice: preset.max,
+                    })
+                  }
+                  style={[styles.chipAlt, selected && styles.chipSelectedAlt]}
+                  accessibilityRole="button">
+                  <AppText
+                    variant="caption"
+                    style={{ color: selected ? colors.success : colors.textMuted }}>
+                    {preset.label}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </>
+      ) : null}
 
-      {hasActiveFilters ? (
+      {!categoriesOnly && hasActiveFilters ? (
         <Button label="Reset filters" variant="secondary" size="compact" onPress={onReset} />
       ) : null}
     </View>
@@ -165,44 +196,66 @@ export function VendorFilterBar({
 
 function createStyles(colors: AppColors) {
   return StyleSheet.create({
-  wrap: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  search: {
-    ...typography.body,
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    color: colors.text,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  chips: {
-    gap: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  chip: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  chipSelected: {
-    backgroundColor: colors.success,
-  },
-  chipAlt: {
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.border,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  chipSelectedAlt: {
-    backgroundColor: colors.successMuted,
-    borderColor: colors.success,
-  },
+    wrap: {
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    search: {
+      ...typography.body,
+      backgroundColor: colors.surfaceElevated,
+      borderColor: colors.border,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      color: colors.text,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    categoriesHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: spacing.md,
+    },
+    filtersBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceElevated,
+    },
+    filtersBtnActive: {
+      borderColor: colors.success,
+      backgroundColor: colors.successMuted,
+    },
+    chips: {
+      gap: spacing.sm,
+      paddingVertical: spacing.xs,
+      paddingRight: spacing.md,
+    },
+    chip: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: radii.pill,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    chipSelected: {
+      backgroundColor: colors.success,
+    },
+    chipAlt: {
+      backgroundColor: colors.surfaceElevated,
+      borderColor: colors.border,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    chipSelectedAlt: {
+      backgroundColor: colors.successMuted,
+      borderColor: colors.success,
+    },
   });
 }
