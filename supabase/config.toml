@@ -48,3 +48,19 @@ enable_signup = true
 # Set true to exercise the “check your email” path (see docs/authentication.md).
 enable_confirmations = false
 
+
+# Chapa payment Edge Functions
+[functions.chapa-webhook]
+verify_jwt = false
+
+[functions.chapa-initialize]
+verify_jwt = true
+
+[functions.chapa-verify]
+verify_jwt = true
+
+[functions.chapa-register-subaccount]
+verify_jwt = true
+
+[functions.chapa-smoke-test]
+verify_jwt = true

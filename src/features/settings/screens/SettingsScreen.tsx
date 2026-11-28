@@ -22,6 +22,7 @@ import type { AppColors, WeddingVisualStyle } from '@/theme/types';
 import { radii } from '@/theme/radii';
 import { spacing } from '@/theme/spacing';
 import { normalizeWeddingStyle, weddingStyleLabel } from '@/theme/weddingStyle';
+import { isChapaSmokeTestEnabled } from '@/lib/devFlags';
 
 function SettingsRow({
   label,
@@ -179,6 +180,20 @@ export function SettingsScreen({ weddingId }: { weddingId?: string }) {
             </AppText>
           </Card>
         )}
+
+        {isChapaSmokeTestEnabled() ? (
+          <Card style={styles.card}>
+            <AppText variant="label" color="heading">
+              Developer
+            </AppText>
+            <SettingsRow
+              icon="card-outline"
+              label="Chapa smoke test"
+              hint="Pay 1–10 ETB with test keys (gateway only)"
+              onPress={() => router.push('/dev/chapa-test' as Href)}
+            />
+          </Card>
+        ) : null}
 
         <Card style={styles.card}>
           <AppText variant="label" color="heading">

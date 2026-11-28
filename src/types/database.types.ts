@@ -75,6 +75,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"booking_payments": {
+                  Row: {
+                    "amount": number,"booking_id": string,"budget_item_id": string | null,"chapa_ref": string | null,"checkout_url": string | null,"created_at": string,"currency_code": string,"expense_payment_id": string | null,"id": string,"payer_user_id": string,"platform_split_type": string | null,"platform_split_value": number | null,"purpose": string,"raw_initialize": Json | null,"raw_verify": Json | null,"raw_webhook": Json | null,"status": string,"tx_ref": string,"updated_at": string,"vendor_subaccount_id": string | null,"verified_at": string | null,"wedding_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"booking_id": string,"budget_item_id"?: string | null,"chapa_ref"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"currency_code"?: string,"expense_payment_id"?: string | null,"id"?: string,"payer_user_id": string,"platform_split_type"?: string | null,"platform_split_value"?: number | null,"purpose": string,"raw_initialize"?: Json | null,"raw_verify"?: Json | null,"raw_webhook"?: Json | null,"status"?: string,"tx_ref": string,"updated_at"?: string,"vendor_subaccount_id"?: string | null,"verified_at"?: string | null,"wedding_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"booking_id"?: string,"budget_item_id"?: string | null,"chapa_ref"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"currency_code"?: string,"expense_payment_id"?: string | null,"id"?: string,"payer_user_id"?: string,"platform_split_type"?: string | null,"platform_split_value"?: number | null,"purpose"?: string,"raw_initialize"?: Json | null,"raw_verify"?: Json | null,"raw_webhook"?: Json | null,"status"?: string,"tx_ref"?: string,"updated_at"?: string,"vendor_subaccount_id"?: string | null,"verified_at"?: string | null,"wedding_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "booking_payments_booking_id_fkey"
+      columns: ["booking_id"]
+isOneToOne: false
+      referencedRelation: "vendor_bookings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "booking_payments_budget_item_id_fkey"
+      columns: ["budget_item_id"]
+isOneToOne: false
+      referencedRelation: "budget_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "booking_payments_expense_payment_id_fkey"
+      columns: ["expense_payment_id"]
+isOneToOne: false
+      referencedRelation: "expense_payments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "booking_payments_payer_user_id_fkey"
+      columns: ["payer_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "booking_payments_wedding_id_fkey"
+      columns: ["wedding_id"]
+isOneToOne: false
+      referencedRelation: "weddings"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"checklist_templates": {
                   Row: {
                     "category_id": string,"description_am": string | null,"description_en": string | null,"id": string,"is_active": boolean,"sort_order": number,"suggested_days_before": number | null,"title_am": string | null,"title_en": string
@@ -785,14 +829,14 @@ isOneToOne: false
                   ]
                 },"vendors": {
                   Row: {
-                    "address": string | null,"business_name": string,"city": string | null,"country_code": string,"cover_url": string | null,"created_at": string,"description": string | null,"email": string | null,"id": string,"instagram_url": string | null,"listing_status": string,"logo_url": string | null,"owner_user_id": string,"phone": string | null,"slug": string,"updated_at": string,"verification_status": string,"website_url": string | null
+                    "address": string | null,"business_name": string,"chapa_subaccount_id": string | null,"city": string | null,"country_code": string,"cover_url": string | null,"created_at": string,"description": string | null,"email": string | null,"id": string,"instagram_url": string | null,"listing_status": string,"logo_url": string | null,"owner_user_id": string,"payout_account_name": string | null,"payout_account_number": string | null,"payout_bank_code": string | null,"payout_split_type": string | null,"payout_split_value": number | null,"phone": string | null,"slug": string,"updated_at": string,"verification_status": string,"website_url": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "address"?: string | null,"business_name": string,"city"?: string | null,"country_code"?: string,"cover_url"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string | null,"id"?: string,"instagram_url"?: string | null,"listing_status"?: string,"logo_url"?: string | null,"owner_user_id": string,"phone"?: string | null,"slug": string,"updated_at"?: string,"verification_status"?: string,"website_url"?: string | null
+                    "address"?: string | null,"business_name": string,"chapa_subaccount_id"?: string | null,"city"?: string | null,"country_code"?: string,"cover_url"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string | null,"id"?: string,"instagram_url"?: string | null,"listing_status"?: string,"logo_url"?: string | null,"owner_user_id": string,"payout_account_name"?: string | null,"payout_account_number"?: string | null,"payout_bank_code"?: string | null,"payout_split_type"?: string | null,"payout_split_value"?: number | null,"phone"?: string | null,"slug": string,"updated_at"?: string,"verification_status"?: string,"website_url"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"business_name"?: string,"city"?: string | null,"country_code"?: string,"cover_url"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string | null,"id"?: string,"instagram_url"?: string | null,"listing_status"?: string,"logo_url"?: string | null,"owner_user_id"?: string,"phone"?: string | null,"slug"?: string,"updated_at"?: string,"verification_status"?: string,"website_url"?: string | null
+                    "address"?: string | null,"business_name"?: string,"chapa_subaccount_id"?: string | null,"city"?: string | null,"country_code"?: string,"cover_url"?: string | null,"created_at"?: string,"description"?: string | null,"email"?: string | null,"id"?: string,"instagram_url"?: string | null,"listing_status"?: string,"logo_url"?: string | null,"owner_user_id"?: string,"payout_account_name"?: string | null,"payout_account_number"?: string | null,"payout_bank_code"?: string | null,"payout_split_type"?: string | null,"payout_split_value"?: number | null,"phone"?: string | null,"slug"?: string,"updated_at"?: string,"verification_status"?: string,"website_url"?: string | null
                   }
                   Relationships: [
                     {
@@ -1195,6 +1239,9 @@ isOneToOne: false
       } },
 "accept_vendor_quote":
 { Args: { "p_quote_id": string }; Returns: Json
+                           },
+"vendor_set_payout_details":
+{ Args: { "p_vendor_id": string,"p_account_name": string,"p_account_number": string,"p_bank_code": string,"p_chapa_subaccount_id"?: string,"p_split_type"?: string,"p_split_value"?: number }; Returns: Json
                            },
 "accept_wedding_invite":
 { Args: { "p_raw_token": string }; Returns: {

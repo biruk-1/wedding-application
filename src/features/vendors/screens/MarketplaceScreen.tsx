@@ -53,6 +53,22 @@ export function MarketplaceScreen() {
             ? `Vendors for ${wedding.data.title}`
             : 'Discover wedding vendors'}
         </AppText>
+        <View style={styles.commerceLinks}>
+          <Button
+            label="Quotes"
+            size="compact"
+            fullWidth={false}
+            variant="secondary"
+            onPress={() => router.push(`/(app)/weddings/${weddingId}/quotes` as Href)}
+          />
+          <Button
+            label="Bookings & pay"
+            size="compact"
+            fullWidth={false}
+            variant="secondary"
+            onPress={() => router.push(`/(app)/weddings/${weddingId}/bookings` as Href)}
+          />
+        </View>
         <ThemeDiscoverBanner
           title="Discover vendors"
           subtitle={
@@ -126,7 +142,7 @@ export function MarketplaceScreen() {
         ) : null}
       </View>
     ),
-    [wedding.data?.title, marketplace, vendors.length],
+    [wedding.data?.title, marketplace, vendors.length, router, weddingId],
   );
 
   if (!weddingId) {
@@ -220,6 +236,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   subtitle: {
+    marginBottom: spacing.sm,
+  },
+  commerceLinks: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginBottom: spacing.sm,
   },
   recommendations: {

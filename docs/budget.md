@@ -46,7 +46,7 @@ Payments that would exceed outstanding are rejected in the service layer (no DB 
 
 ## Deferred
 
-- Payment gateways (Stripe, Telebirr checkout, Chapa charge) — tracking methods only
 - Currency conversion
 - Receipt uploads (`receipt_storage_path` has no storage bucket)
-- Auto-creating expenses from vendor inquiries or unconfirmed bookings
+
+Chapa booking checkout (couple Bookings screen) auto-creates a budget expense on quote accept and records `expense_payments` with method `chapa` when a charge verifies. Manual payment chips remain for offline cash/bank/Telebirr tracking.

@@ -39,7 +39,11 @@ Recommended chips apply the same category filter as the normal category controls
 ## Deferred
 
 - Vendor admin / listing management
-- Quotes, bookings, payments, chat
+- Chat
 - Private storage bucket URL signing (no bucket configured yet)
 - Invented ratings or popularity ranking
 - Database-managed event-to-category recommendations
+
+## Quotes, bookings & Chapa
+
+Couple UI: Marketplace → **Quotes** / **Bookings & pay**. Accepting a sent quote creates a `vendor_bookings` row (30% deposit by default), a linked `budget_items` line, then Chapa hosted checkout for deposit/balance via Edge Functions (`chapa-initialize`, `chapa-verify`, `chapa-webhook`). Successful charges mirror into `expense_payments` with `payment_method = chapa`. Vendor payout split: Profile → **Chapa payouts** in the vendor app (`chapa-register-subaccount`).

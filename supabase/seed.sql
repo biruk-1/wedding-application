@@ -87,30 +87,8 @@ on conflict (slug) do update
 set name_en = excluded.name_en;
 
 -- ---------------------------------------------------------------------------
--- LOCAL DEV ONLY: when a vendor submits for verification, auto-publish so the
--- couple Explore marketplace stays in sync without a separate admin step.
--- This lives in seed.sql (not a migration), so hosted environments that do not
--- run seeds keep the real pending → admin review flow.
+-- Vendor verification is admin-only (kiburan-admin). Do NOT auto-publish here.
+-- Submitted vendors stay `pending` until an admin approves them.
 -- ---------------------------------------------------------------------------
-create or replace function private.local_auto_publish_pending_vendor()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if tg_op = 'UPDATE'
-     and new.verification_status = 'pending'
-     and old.verification_status is distinct from 'pending' then
-    new.verification_status := 'verified';
-    new.listing_status := 'published';
-  end if;
-  return new;
-end;
-$$;
-
 drop trigger if exists vendors_local_auto_publish on public.vendors;
-create trigger vendors_local_auto_publish
-  before update of verification_status on public.vendors
-  for each row
-  execute function private.local_auto_publish_pending_vendor();
+drop function if exists private.local_auto_publish_pending_vendor();

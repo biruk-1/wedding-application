@@ -48,6 +48,14 @@ export const queryKeys = {
   publicTeamInvite: (token: string) => ['team-invite', token] as const,
   weddingVendor: (userId: string, weddingId: string, vendorId: string) =>
     ['u', userId, 'wedding', weddingId, 'saved-vendor', vendorId] as const,
+  weddingQuotes: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'quotes'] as const,
+  weddingQuote: (userId: string, weddingId: string, quoteId: string) =>
+    ['u', userId, 'wedding', weddingId, 'quotes', quoteId] as const,
+  weddingBookings: (userId: string, weddingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'bookings'] as const,
+  weddingBooking: (userId: string, weddingId: string, bookingId: string) =>
+    ['u', userId, 'wedding', weddingId, 'bookings', bookingId] as const,
   weddingFiles: (userId: string, weddingId: string) =>
     ['u', userId, 'wedding', weddingId, 'files'] as const,
   profile: (userId: string) => ['u', userId, 'profile'] as const,

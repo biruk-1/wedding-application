@@ -110,7 +110,6 @@ export function WelcomeScreen() {
               </AppText>
             </Pressable>
           ) : null}
-
         </View>
       </View>
     </View>
